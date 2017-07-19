@@ -292,7 +292,7 @@ class MassMailing(models.Model):
     create_date = fields.Datetime(string='Creation Date')
     sent_date = fields.Datetime(string='Sent Date', oldname='date', copy=False)
     schedule_date = fields.Datetime(string='Schedule in the Future')
-    body_html = fields.Html(string='Body', sanitize_attributes=False)
+    body_html = fields.Html(string='Body', sanitize=False)
     attachment_ids = fields.Many2many('ir.attachment', 'mass_mailing_ir_attachments_rel',
         'mass_mailing_id', 'attachment_id', string='Attachments')
     keep_archives = fields.Boolean(string='Keep Archives')
@@ -424,6 +424,7 @@ class MassMailing(models.Model):
     @api.onchange('template')
     def _onchange_template(self):
         self.body_html = self.template.body_html
+        self.name = self.template.subject
 
     #------------------------------------------------------
     # Technical stuff

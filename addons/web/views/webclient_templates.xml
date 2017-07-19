@@ -195,7 +195,7 @@
                 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
                 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
-                <title t-esc="Mass Mailing - DYL"/>
+                <title t-esc="'DYL'"/>
                 <link type="image/x-icon" rel="shortcut icon" t-att-href="x_icon or '/web/static/src/img/favicon.ico'"/>
 
                 <script type="text/javascript">
