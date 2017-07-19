@@ -1190,7 +1190,7 @@ var FieldBinaryFile = FieldBinary.extend({
         }
     },
     render_value: function() {
-        var filename = this.view.datarecord[this.node.attrs.filename];
+        var filename = this.field_manager.fields[this.node.attrs.filename].get_value();
         if (this.get("effective_readonly")) {
             this.do_toggle(!!this.get('value'));
             if (this.get('value')) {
