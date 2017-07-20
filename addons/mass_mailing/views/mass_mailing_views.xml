@@ -32,6 +32,11 @@
             <field name="arch" type="xml">
                <search string="Mailing Lists Subscribers">
                     <field name="name"/>
+                    <field name="first_name"/>
+                    <field name="last_name"/>
+                    <field name="position"/>
+                    <field name="phone_number"/>
+                    <field name="company"/>
                     <field name="email"/>
                     <field name="list_id"/>
                     <separator/>
@@ -54,8 +59,12 @@
             <field name="priority">10</field>
             <field name="arch" type="xml">
                 <tree string="Mailing Lists Subscribers" editable="top">
+                    <field name="first_name"/>
+                    <field name="last_name"/>
                     <field name="email"/>
-                    <field name="name"/>
+                    <field name="position"/>
+                    <field name="phone_number"/>
+                    <field name="company"/>
                     <field name="list_id"/>
                     <field name="message_bounce"/>
                     <field name="create_date"/>

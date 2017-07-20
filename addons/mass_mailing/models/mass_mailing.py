@@ -53,6 +53,13 @@ class MassMailingContact(models.Model):
     _rec_name = 'email'
 
     name = fields.Char()
+    first_name = fields.Char(string='First Name')
+    last_name = fields.Char(string='Last Name')
+    position = fields.Char(string='Position')
+    phone_number = fields.Char(string='Phone Number')
+    company = fields.Char(string='Company')
+    category = fields.Char(string='Category')
+
     email = fields.Char(required=True)
     create_date = fields.Datetime(string='Create Date')
     list_id = fields.Many2one(
