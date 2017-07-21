@@ -432,6 +432,7 @@ class MassMailing(models.Model):
     def _onchange_template(self):
         self.body_html = self.template.body_html
         self.name = self.template.subject
+        self.attachment_ids = self.template.attachment_ids
 
     #------------------------------------------------------
     # Technical stuff
