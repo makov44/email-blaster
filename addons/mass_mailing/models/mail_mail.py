@@ -38,7 +38,8 @@ class MailMail(models.Model):
         return '<img src="%s" alt=""/>' % track_url
 
     def _get_unsubscribe_url(self, email_to):
-        base_url = self.env['ir.config_parameter'].get_param('web.base.url')
+        self.param = self.env['ir.config_parameter'].get_param('web.base.url')
+        base_url = self.param
         url = urlparse.urljoin(
             base_url, 'mail/mailing/%(mailing_id)s/unsubscribe?%(params)s' % {
                 'mailing_id': self.mailing_id.id,

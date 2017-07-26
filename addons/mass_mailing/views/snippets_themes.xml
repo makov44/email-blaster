@@ -153,21 +153,21 @@
                 <tbody>
                     <tr>
                         <td width="100%" class="o_mail_h_padding o_mail_v_padding">
-                            <h2 class="mt0">Thank you for joining us!</h2>
-                            <p>We want to take this opportunity to welcome you to our ever-growing community!<br/></p>
-                            <p>Your platform is ready for work. It will help you reduce the costs of digital signage, attract new customers and increase sales.</p>
-                            <p>Enjoy,</p>
+                            <h2 class="mt0">Quick question:</h2>
+                            <p>What if you could transform your agency in 5 minutes a day?<br/></p>
+                            <p>We've interviewed some of the most successful Allstate agents in the country on how to run an agency.
+                                In this FREE email course, you'll get their best tips delivered right to your inbox. You'll learn:</p>
+                            <p>- How to 287 items/mo with internet leads</p>
+                            <p>- A top 10 agent's hiring and training tips</p>
+                            <p>- How the #1 commercial agent telemarkets</p>
+
                             <img src="/mass_mailing/static/src/img/theme_default//demo/signature.png" style="width:125px; margin-top:8px;margin-bottom:-25px;" alt="Demo Signature"/>
                             <p>
                                 <small>
-                                    <strong>Michael Fletcher</strong><br/>
-                                    <small>Community Manager</small>
+                                    <strong>Matt Vandervort</strong><br/>
+                                    <small>Vice President of Sales</small>
                                 </small>
                             </p>
-                            <div class="o_mail_v_padding text-center">
-                                <a href="#" class="btn btn-primary">LOGIN</a>
-                            </div>
-
                         </td>
                     </tr>
                 </tbody>
