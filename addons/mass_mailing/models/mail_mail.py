@@ -30,10 +30,8 @@ class MailMail(models.Model):
     def _get_tracking_url(self, partner=None):
         base_url = self.env['ir.config_parameter'].get_param('web.base.url')
         track_url = urlparse.urljoin(
-            base_url, 'mail/track/%(mail_id)s/blank.gif?%(params)s' % {
-                'mail_id': self.id,
-                'params': werkzeug.url_encode({'db': self.env.cr.dbname})
-            }
+            base_url, 'mail/track/%(mail_id)s/blank.gif' % {
+                'mail_id': self.id}
         )
         return '<img src="%s" alt=""/>' % track_url
 
