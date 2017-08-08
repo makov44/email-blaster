@@ -426,7 +426,7 @@ class MassMailing(models.Model):
             self.mailing_domain = "[('opt_out', '=', False)]"
         else:
             self.mailing_domain = []
-        #self.body_html = "on_change_model_and_list"
+        self.body_html = "on_change_model_and_list"
 
     @api.onchange('template')
     def _onchange_template(self):

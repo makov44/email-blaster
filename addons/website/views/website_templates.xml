@@ -84,18 +84,19 @@
             'data-main-object': repr(main_object) if editable or translatable else None,
             'data-oe-company-name': res_company.name
         }"/>
-        <t t-set="title" t-value="'DYL'"></t>
-      <!--  <t t-if="not title">
-            <t t-if="not additional_title and main_object and 'name' in main_object">
-                <t t-set="additional_title" t-value="main_object.name"/>
+        <t t-set="title" t-value="'DYL'">
+            <t t-if="not title">
+                <t t-if="not additional_title and main_object and 'name' in main_object">
+                    <t t-set="additional_title" t-value="main_object.name"/>
+                </t>
+                <t t-if="main_object and 'website_meta_title' in main_object and main_object.website_meta_title">
+                    <t t-set="title" t-value="main_object.website_meta_title"/>
+                </t>
+                <t t-else="">
+                    <t t-set="title"><t t-if="additional_title"><t t-raw="additional_title"/> | </t><t t-esc="(website or res_company).name"/></t>
+                </t>
             </t>
-            <t t-if="main_object and 'website_meta_title' in main_object and main_object.website_meta_title">
-                <t t-set="title" t-value="main_object.website_meta_title"/>
-            </t>
-            <t t-else="">
-                <t t-set="title"><t t-if="additional_title"><t t-raw="additional_title"/> | </t><t t-esc="(website or res_company).name"/></t>
-            </t>
-        </t>-->
+        </t>
         <t t-set="x_icon" t-value="'/web/image/website/%s/favicon/' % website.id"/>
         <t t-set="head_website">
             <meta name="description" t-att-content="main_object and 'website_meta_description' in main_object
