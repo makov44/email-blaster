@@ -112,6 +112,12 @@ def exec_pg_environ():
         env['PGUSER'] = odoo.tools.config['db_user']
     if odoo.tools.config['db_password']:
         env['PGPASSWORD'] = odoo.tools.config['db_password']
+    if odoo.tools.config['db_mysql_database']:
+        env['MYSQLDATABASE'] = odoo.tools.config['db_mysql_database']
+    if odoo.tools.config['db_mysql_user']:
+        env['MYSQLUSER'] = odoo.tools.config['db_mysql_user']
+    if odoo.tools.config['db_mysql_password']:
+        env['MYSQLPASSWORD'] = odoo.tools.config['db_mysql_password']
     return env
 
 def exec_pg_command(name, *args):

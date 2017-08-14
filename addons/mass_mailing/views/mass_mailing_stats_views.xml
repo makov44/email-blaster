@@ -37,6 +37,7 @@
                 <field name="opened"/>
                 <field name="replied"/>
                 <field name="bounced"/>
+                <field name="status"/>
             </tree>
         </field>
     </record>
@@ -57,6 +58,7 @@
                         <field name="opened"/>
                         <field name="replied"/>
                         <field name="bounced"/>
+                        <field name="status"/>
                     </group>
                     <group>
                         <field name="mass_mailing_id"/>

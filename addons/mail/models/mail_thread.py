@@ -1283,6 +1283,18 @@ class MailThread(models.AbstractModel):
         return thread_id
 
     @api.model
+    def maillog_process(self, mail_log, bounced_mail_id, bounced_model, bounced_thread_id):
+
+        if bounced_model in self.env and hasattr(self.env[bounced_model],
+                                                 'message_receive_bounce') and bounced_thread_id:
+            self.env[bounced_model].browse(int(bounced_thread_id)).message_receive_bounce()
+
+        _logger.info(
+            'Mail from %s to %s with Message-Id %s: bounced mail from mail %s, model: %s, thread_id: %s',
+            mail_log.email_from, mail_log.email_to, mail_log.message_id, bounced_mail_id, bounced_model, bounced_thread_id)
+
+
+    @api.model
     def message_new(self, msg_dict, custom_values=None):
         """Called by ``message_process`` when a new message is received
            for a given thread model, if the message did not belong to
@@ -1337,7 +1349,7 @@ class MailThread(models.AbstractModel):
         return True
 
     @api.multi
-    def message_receive_bounce(self, email, partner, mail_id=None):
+    def message_receive_bounce(self, email=None, partner=None, mail_id=None):
         """Called by ``message_process`` when a bounce email (such as Undelivered
         Mail Returned to Sender) is received for an existing thread. The default
         behavior is to check is an integer  ``message_bounce`` column exists.

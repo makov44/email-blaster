@@ -13,5 +13,17 @@
             <!-- Active flag is set on fetchmail_server.create/write -->
             <field name="active" eval="False"/>
         </record>
+        <record id="ir_cron_mail_logs_action" model="ir.cron">
+            <field name="name">Fetch Email Logs Service</field>
+            <field name="interval_number">30</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+            <field name="model">fetchmail.server</field>
+            <field name="function">_fetch_mail_logs</field>
+            <field name="args">()</field>
+            <!-- Active flag is set on fetchmail_server.create/write -->
+            <field name="active" eval="False"/>
+        </record>
     </data>
 </odoo>

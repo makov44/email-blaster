@@ -5,9 +5,10 @@ import logging
 import poplib
 from imaplib import IMAP4, IMAP4_SSL
 from poplib import POP3, POP3_SSL
-
+import os
 from odoo import api, fields, models, tools, _
 from odoo.exceptions import UserError
+import mysql.connector
 
 
 _logger = logging.getLogger(__name__)
@@ -230,6 +231,57 @@ class FetchmailServer(models.Model):
                         pop_server.quit()
             server.write({'date': fields.Datetime.now()})
         return True
+
+    @api.model
+    def _fetch_mail_logs(self):
+        """ Method called by cron to fetch bounced mails logs from servers """
+        return self.search([('state', '=', 'done'), ('type', 'in', ['pop', 'imap'])]).fetch_mail_log()
+
+    @api.multi
+    def fetch_mail_log(self):
+        """ Method called by cron to fetch bounced mail logs from servers """
+        additionnal_context = {
+            'fetchmail_cron_running': True
+        }
+        MailThread = self.env['mail.thread']
+        config = tools.config
+        user = config['db_mysql_user'] or os.environ.get('MYSQLUSER', 'default')
+        database = config['db_mysql_database'] or os.environ.get('MYSQLDATABASE', 'default')
+        password = config['db_mysql_password'] or os.environ.get('MYSQLPASSWORD', 'default')
+        for server in self:
+            count, failed = 0, 0
+            _logger.info('start checking for new bounced email logs on %s server %s', server.type, server.name)
+            additionnal_context['fetchmail_server_id'] = server.id
+            additionnal_context['server_type'] = server.type
+            try:
+                cnx = mysql.connector.connect(user=user,
+                                        password=password,
+                                        host=server.server,
+                                        database=database)
+                cursor = cnx.cursor(named_tuple=True)
+                query = ("select email_to, email_from, message_id, last_status "                        
+                         "from email_log "
+                         "where ts >= DATE_SUB(NOW(),INTERVAL 1 HOUR) "
+                         "order by ts DESC")
+
+                cursor.execute(query)
+                for mail_log in cursor:
+                    try:
+                        MailThread.with_context(**additionnal_context).maillog_process(mail_log)
+                    except Exception:
+                        _logger.warn('Failed to process email log from %s server %s. Message ID %s',
+                                     server.type, server.name, mail_log.message_id, exc_info=True)
+                        failed += 1
+                    count += 1
+                _logger.info("Fetched %d email logs for last hour on %s server %s; %d succeeded, %d failed.", count, server.type,
+                                 server.name, (count - failed), failed)
+            except Exception:
+                _logger.warn('Failed to process email logs from %s server %s.', server.type, server.name, exc_info=True)
+            finally:
+                if cursor:
+                    cursor.close()
+                if cnx:
+                    cnx.close()
 
     @api.model
     def _update_cron(self):

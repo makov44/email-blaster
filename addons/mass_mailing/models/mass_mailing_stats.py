@@ -50,6 +50,7 @@ class MailMailStats(models.Model):
                                     help='Last state update of the mail',
                                     store=True)
     recipient = fields.Char(compute="_compute_recipient")
+    status = fields.Char(string="Last Status")
 
     @api.depends('sent', 'opened', 'replied', 'bounced', 'exception')
     def _compute_state(self):
@@ -113,4 +114,9 @@ class MailMailStats(models.Model):
     def set_bounced(self, mail_mail_ids=None, mail_message_ids=None):
         statistics = self._get_records(mail_mail_ids, mail_message_ids, [('bounced', '=', False)])
         statistics.write({'bounced': fields.Datetime.now()})
+        return statistics
+
+    def set_status(self,  message_id=None, status=None):
+        statistics = self.search([('message_id', '=', message_id)], limit=1)
+        statistics.write({'status': status})
         return statistics
