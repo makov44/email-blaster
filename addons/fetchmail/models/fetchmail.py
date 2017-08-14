@@ -248,6 +248,10 @@ class FetchmailServer(models.Model):
         user = config['db_mysql_user'] or os.environ.get('MYSQLUSER', 'default')
         database = config['db_mysql_database'] or os.environ.get('MYSQLDATABASE', 'default')
         password = config['db_mysql_password'] or os.environ.get('MYSQLPASSWORD', 'default')
+        if not user or not database or not password:
+            _logger.warn("MYSQL database configuration parameters weren't defined.")
+            return
+
         for server in self:
             count, failed = 0, 0
             _logger.info('start checking for new bounced email logs on %s server %s', server.type, server.name)
