@@ -257,6 +257,8 @@ class FetchmailServer(models.Model):
             _logger.info('start checking for new bounced email logs on %s server %s', server.type, server.name)
             additionnal_context['fetchmail_server_id'] = server.id
             additionnal_context['server_type'] = server.type
+            cnx = None
+            cursor = None
             try:
                 cnx = mysql.connector.connect(user=user,
                                         password=password,
