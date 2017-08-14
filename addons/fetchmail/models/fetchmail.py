@@ -264,7 +264,7 @@ class FetchmailServer(models.Model):
                                         password=password,
                                         host=server.server,
                                         database=database)
-                cursor = cnx.cursor(named_tuple=True)
+                cursor = cnx.cursor()
                 query = ("select email_to, email_from, message_id, last_status "                        
                          "from email_log "
                          "where ts >= DATE_SUB(NOW(),INTERVAL 1 HOUR) "
@@ -272,11 +272,12 @@ class FetchmailServer(models.Model):
 
                 cursor.execute(query)
                 for mail_log in cursor:
+                    mail_log = dict(zip(cursor.column_names, mail_log))
                     try:
                         MailThread.with_context(**additionnal_context).maillog_process(mail_log)
                     except Exception:
                         _logger.warn('Failed to process email log from %s server %s. Message ID %s',
-                                     server.type, server.name, mail_log.message_id, exc_info=True)
+                                     server.type, server.name, mail_log['message_id'], exc_info=True)
                         failed += 1
                     count += 1
                 _logger.info("Fetched %d email logs for last hour on %s server %s; %d succeeded, %d failed.", count, server.type,

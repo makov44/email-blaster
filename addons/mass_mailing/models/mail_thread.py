@@ -42,18 +42,18 @@ class MailThread(models.AbstractModel):
 
     @api.model
     def maillog_process(self, mail_log):
-        statistics = self.env['mail.mail.statistics'].search([('message_id', '=', mail_log.message_id)], limit=1)
-        if not statistics or not mail_log.last_status:
+        statistics = self.env['mail.mail.statistics'].search([('message_id', '=', mail_log['message_id'])], limit=1)
+        if not statistics or not mail_log['last_status']:
             return
 
-        self.env['mail.mail.statistics'].set_status(message_id=mail_log.message_id, status=mail_log.last_status)
+        self.env['mail.mail.statistics'].set_status(message_id=mail_log['message_id'], status=mail_log['last_status'])
         """This statistic already bounced or this is not bounced email."""
-        if statistics.bounced or "bounced" not in mail_log.last_status:
+        if statistics.bounced or "bounced" not in mail_log['last_status']:
             return
 
-        self.env['mail.mail.statistics'].set_bounced(mail_message_ids=[mail_log.message_id])
+        self.env['mail.mail.statistics'].set_bounced(mail_message_ids=[mail_log['message_id']])
         bounce_alias = self.env['ir.config_parameter'].get_param("mail.bounce.alias")
-        email_from = mail_log.email_from
+        email_from = mail_log['email_from']
         email_from_localpart = (tools.email_split(email_from) or [''])[0].split('@', 1)[0].lower()
 
         if bounce_alias and bounce_alias in email_from_localpart:

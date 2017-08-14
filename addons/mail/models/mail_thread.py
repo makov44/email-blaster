@@ -1291,7 +1291,7 @@ class MailThread(models.AbstractModel):
 
         _logger.info(
             'Mail from %s to %s with Message-Id %s: bounced mail from mail %s, model: %s, thread_id: %s',
-            mail_log.email_from, mail_log.email_to, mail_log.message_id, bounced_mail_id, bounced_model, bounced_thread_id)
+            mail_log['email_from'], mail_log['email_to'], mail_log['message_id'], bounced_mail_id, bounced_model, bounced_thread_id)
 
 
     @api.model
