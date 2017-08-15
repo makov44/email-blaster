@@ -56,6 +56,9 @@ class FetchmailServer(models.Model):
     message_ids = fields.One2many('mail.mail', 'fetchmail_server_id', string='Messages', readonly=True)
     configuration = fields.Text('Configuration', readonly=True)
     script = fields.Char(readonly=True, default='/mail/static/scripts/openerp_mailgate.py')
+    mysql_user = fields.Char(string='Username', readonly=True, states={'draft': [('readonly', False)]})
+    mysql_database = fields.Char(string='Database', readonly=True, states={'draft': [('readonly', False)]})
+    mysql_password = fields.Char(string='Password', readonly=True, states={'draft': [('readonly', False)]})
 
     @api.onchange('type', 'is_ssl', 'object_id')
     def onchange_server_type(self):
@@ -132,10 +135,9 @@ class FetchmailServer(models.Model):
         for server in self:
             try:
                 connection = server.connect()
-                server.write({'state': 'done'})
             except Exception, err:
                 _logger.info("Failed to connect to %s server %s.", server.type, server.name, exc_info=True)
-                raise UserError(_("Connection test failed: %s") % tools.ustr(err))
+                raise UserError(_("Connection to mail server test failed: %s") % tools.ustr(err))
             finally:
                 try:
                     if connection:
@@ -143,6 +145,23 @@ class FetchmailServer(models.Model):
                             connection.close()
                         elif server.type == 'pop':
                             connection.quit()
+                except Exception:
+                    # ignored, just a consequence of the previous exception
+                    pass
+
+            try:
+                cnx = mysql.connector.connect(user=server.mysql_user,
+                                              password=server.mysql_password,
+                                              host=server.server,
+                                              database=server.mysql_database)
+                server.write({'state': 'done'})
+            except Exception, err:
+                _logger.info("Failed to connect to mysql database %s on server %s.", server.mysql_database, server.name, exc_info=True)
+                raise UserError(_("Connection to mysql database test failed: %s") % tools.ustr(err))
+            finally:
+                try:
+                    if cnx:
+                        cnx.close()
                 except Exception:
                     # ignored, just a consequence of the previous exception
                     pass
@@ -244,13 +263,6 @@ class FetchmailServer(models.Model):
             'fetchmail_cron_running': True
         }
         MailThread = self.env['mail.thread']
-        config = tools.config
-        user = config['db_mysql_user'] or os.environ.get('MYSQLUSER', 'default')
-        database = config['db_mysql_database'] or os.environ.get('MYSQLDATABASE', 'default')
-        password = config['db_mysql_password'] or os.environ.get('MYSQLPASSWORD', 'default')
-        if not user or not database or not password:
-            _logger.warn("MYSQL database configuration parameters weren't defined.")
-            return
 
         for server in self:
             count, failed = 0, 0
@@ -260,10 +272,10 @@ class FetchmailServer(models.Model):
             cnx = None
             cursor = None
             try:
-                cnx = mysql.connector.connect(user=user,
-                                        password=password,
+                cnx = mysql.connector.connect(user=server.mysql_user,
+                                        password=server.mysql_password,
                                         host=server.server,
-                                        database=database)
+                                        database=server.mysql_database)
                 cursor = cnx.cursor()
                 query = ("select email_to, email_from, message_id, last_status "                        
                          "from email_log "
@@ -285,10 +297,14 @@ class FetchmailServer(models.Model):
             except Exception:
                 _logger.warn('Failed to process email logs from %s server %s.', server.type, server.name, exc_info=True)
             finally:
-                if cursor:
-                    cursor.close()
-                if cnx:
-                    cnx.close()
+                try:
+                    if cursor:
+                        cursor.close()
+                    if cnx:
+                        cnx.close()
+                except Exception:
+                    # ignored, just a consequence of the previous exception
+                    pass
 
     @api.model
     def _update_cron(self):
