@@ -6,6 +6,10 @@ import re
 
 from odoo import _, api, fields, models, SUPERUSER_ID, tools
 from odoo.tools.safe_eval import safe_eval
+import time
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 # main mako-like expression pattern
@@ -41,6 +45,7 @@ class MailComposer(models.TransientModel):
     _description = 'Email composition wizard'
     _log_access = True
     _batch_size = 500
+    _batch_delay = 0
 
     @api.model
     def default_get(self, fields):
@@ -235,6 +240,7 @@ class MailComposer(models.TransientModel):
             else:
                 res_ids = [wizard.res_id]
 
+            batch_delay = int(self.env['ir.config_parameter'].sudo().get_param('mail.batch_delay')) or self._batch_delay
             batch_size = int(self.env['ir.config_parameter'].sudo().get_param('mail.batch_size')) or self._batch_size
             sliced_res_ids = [res_ids[i:i + batch_size] for i in range(0, len(res_ids), batch_size)]
 
@@ -245,6 +251,7 @@ class MailComposer(models.TransientModel):
             else:
                 subtype_id = self.sudo().env.ref('mail.mt_comment', raise_if_not_found=False).id
 
+            count = 0
             for res_ids in sliced_res_ids:
                 batch_mails = Mail
                 all_mail_values = wizard.get_mail_values(res_ids)
@@ -259,6 +266,9 @@ class MailComposer(models.TransientModel):
 
                 if wizard.composition_mode == 'mass_mail':
                     batch_mails.send(auto_commit=auto_commit)
+                    count = count + 1
+                    _logger.debug("Processed mass mailing batch %s for Mail ID %s.", count, batch_mails.id)
+                    time.sleep(batch_delay)
 
         return {'type': 'ir.actions.act_window_close'}
 
