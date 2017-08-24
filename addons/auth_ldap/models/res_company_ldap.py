@@ -111,6 +111,7 @@ class CompanyLDAP(models.Model):
                 conn.unbind()
                 entry = results[0]
         except ldap.INVALID_CREDENTIALS:
+            _logger.warn('Invalid LDAP Credentials.')
             return False
         except ldap.LDAPError, e:
             _logger.error('An LDAP exception occurred: %s', e)
