@@ -5,17 +5,14 @@
         <div class="container-fluid o_web_settings_dashboard">
             <div class="row">
                 <div class="o_web_settings_dashboard_enterprise"/>
-                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12 o_web_settings_dashboard_col">
+                <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12 o_web_settings_dashboard_col">
                     <div class="text-center o_web_settings_dashboard_apps"></div>
                 </div>
-                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12 o_web_settings_dashboard_col"> 
+                <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12 o_web_settings_dashboard_col">
                     <div class="text-center o_web_settings_dashboard_invitations"></div>
                 </div>
-                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12 o_web_settings_dashboard_col">
+                <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12 o_web_settings_dashboard_col">
                     <div class="text-center o_web_settings_dashboard_planner"></div>
-                </div>
-                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12 o_web_settings_dashboard_col">
-                    <div class="text-center o_web_settings_dashboard_share"></div>
                 </div>
             </div>
         </div>
@@ -92,14 +89,22 @@
             </div>
             <div>
                 <small class="text-muted text-center o_web_settings_dashboard_compact_subtitle">
-                    Follow these implementation guides to get the most out of Odoo.
+                    Follow these implementation guides.
                 </small>
             </div>
             <hr/>
             <t t-set="planners" t-value="widget.planners"/>
             <t t-call="DashboardPlanner.PlannersList"/>
             <hr/>
-            Need more help? <a href="https://www.odoo.com/documentation/user">Browse the documentation.</a>
+          <div class="row">
+            <div class="col-md-12">
+                <a t-if="debug != true" class="oe_activate_debug_mode pull-right" href="?debug" >Activate the developer mode</a>
+                <br t-if="debug != true"/>
+                <a t-if="debug != 'assets'" class="oe_activate_debug_mode pull-right" href="?debug=assets" >Activate the developer mode (with assets)</a>
+                <br t-if="debug != 'assets'"/>
+                <a t-if="debug != false" class="oe_activate_debug_mode pull-right" href="/web" >Deactivate the developer mode</a>
+            </div>
+            </div>
         </div>
     </t>
     
@@ -160,7 +165,7 @@
                 </div>
             </div>
             <hr/>
-            <div class="row">
+             <div class="row">
                 <div class="col-md-12">
                     <a t-if="debug != true" class="oe_activate_debug_mode pull-right" href="?debug" >Activate the developer mode</a>
                     <br t-if="debug != true"/>
