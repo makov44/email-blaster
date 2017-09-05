@@ -67,9 +67,9 @@ snippet_editor.Class.include({
 rte.Class.include({
     config: function ($editable) {
         var config = this._super.apply(this, arguments);
-        if ($.deparam($.param.querystring()).debug !== undefined) {
+        //if ($.deparam($.param.querystring()).debug !== undefined) {
             config.airPopover.splice(7, 0, ['view', ['codeview']]);
-        }
+        //}
         return config;
     }
 });
