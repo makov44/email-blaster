@@ -699,6 +699,11 @@ class Message(models.Model):
             message_id = tools.generate_tracking_message_id('%(res_id)s-%(model)s' % values)
         else:
             message_id = tools.generate_tracking_message_id('private')
+
+        # Replaced application host name with sender host name in message id
+        mail_domain = values['email_from'].split('@')[1]
+        if mail_domain:
+            message_id = message_id.split('@')[0] + '@' + mail_domain
         return message_id
 
     @api.multi
