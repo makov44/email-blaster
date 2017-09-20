@@ -1363,6 +1363,9 @@ class MailThread(models.AbstractModel):
         if 'message_bounce' in self._fields:
             for record in self:
                 record.message_bounce = record.message_bounce + 1
+                if record.message_bounce > 2:
+                    if 'opt_out' in self._fields:
+                        record.write({'opt_out': True})
 
     def _message_extract_payload_postprocess(self, message, body, attachments):
         """ Perform some cleaning / postprocess in the body and attachments

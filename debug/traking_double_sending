@@ -1,0 +1,6 @@
+select t1._count, t1.res_id, t2.email  from (SELECT t0.res_id , count(*) as _count
+	FROM public.mail_mail_statistics as t0
+    group by t0.res_id
+    having count(*) >1) as t1
+    left join public.mail_mass_mailing_contact as t2 on t1.res_id = t2.id
+    order by t1._count desc

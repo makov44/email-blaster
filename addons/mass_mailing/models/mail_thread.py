@@ -46,8 +46,9 @@ class MailThread(models.AbstractModel):
         if not statistics or not mail_log['last_status']:
             return
 
+        """ We update email status send/bounced. """
         self.env['mail.mail.statistics'].set_status(message_id=mail_log['message_id'], status=mail_log['last_status'])
-        """This statistic already bounced or this is not bounced email."""
+        """ This statistic already bounced or this is not bounced email. """
         if statistics.bounced or "bounced" not in mail_log['last_status']:
             return
 

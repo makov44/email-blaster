@@ -343,13 +343,13 @@ class IrMailServer(models.Model):
         joining the parameters "mail.catchall.alias" and
         "mail.catchall.domain".
 
-        If "mail.catchall.alias" is not set it defaults to "postmaster-odoo".
+        If "mail.catchall.alias" is not set it defaults to "bounce".
 
         If "mail.catchall.domain" is not set, return None.
 
         '''
         get_param = self.env['ir.config_parameter'].sudo().get_param
-        postmaster = get_param('mail.bounce.alias', default='postmaster-odoo')
+        postmaster = get_param('mail.bounce.alias', default='bounce')
         domain = get_param('mail.catchall.domain')
         if postmaster and domain:
             return '%s@%s' % (postmaster, domain)
