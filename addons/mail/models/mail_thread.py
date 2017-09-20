@@ -1098,6 +1098,15 @@ class MailThread(models.AbstractModel):
                          message_id, email_from, email_to)
             return []
 
+        # Check if it is auto-reply message
+        subject = tools.decode_message_header(message, 'Subject')
+        subject_filter = ['Automatic reply', 'Auto-Reply', 'Out of the office']
+        if any(item in subject for item in subject_filter):
+            _logger.info('Routing mail with Message-Id %s: not routing auto-reply email from %s to %s with a subject %s',
+                         message_id, email_from, email_to, subject)
+            return []
+
+
         # 1. Check if message is a reply on a thread
         msg_references = [ref for ref in tools.mail_header_msgid_re.findall(thread_references) if 'reply_to' not in ref]
         mail_messages = MailMessage.sudo().search([('message_id', 'in', msg_references)], limit=1)
