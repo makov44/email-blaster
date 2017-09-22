@@ -331,6 +331,7 @@
                             <page string="Options">
                                 <group>
                                     <group string="Mailing">
+                                        <field name="mail_server_id"/>
                                         <label for="attachment_ids"/>
                                         <div>
                                             <field name="attachment_ids"  widget="many2many_binary" string="Attach a file" class="oe_inline"/>

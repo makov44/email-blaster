@@ -259,9 +259,7 @@ class FetchmailServer(models.Model):
     @api.multi
     def fetch_mail_log(self):
         """ Method called by cron to fetch bounced mail logs from servers """
-        additionnal_context = {
-            'fetchmail_cron_running': True
-        }
+        additionnal_context = {}
         MailThread = self.env['mail.thread']
 
         for server in self:

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
-
+import logging
 from datetime import datetime
 import random
 
@@ -8,6 +8,12 @@ from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 from odoo.tools.safe_eval import safe_eval
 from odoo.tools.translate import html_translate
+import threading
+import thread
+
+_logger = logging.getLogger(__name__)
+
+MASS_MAILLING_LOCK = []
 
 
 class MassMailingTag(models.Model):
@@ -344,6 +350,9 @@ class MassMailing(models.Model):
     bounced_ratio = fields.Integer(compute="_compute_statistics", String='Bounced Ratio')
     next_departure = fields.Datetime(compute="_compute_next_departure", string='Next Departure')
     template = fields.Many2one('mail.template', string='Template')
+    mail_server_id = fields.Many2one('ir.mail_server', 'Outgoing mail server')
+
+    _lock = threading.Lock()
 
     def _compute_total(self):
         for mass_mailing in self:
@@ -591,13 +600,14 @@ class MassMailing(models.Model):
                 'mass_mailing_id': mailing.id,
                 'mailing_list_ids': [(4, l.id) for l in mailing.contact_list_ids],
                 'no_auto_thread': mailing.reply_to_mode != 'thread',
+                'mail_server_id': mailing.mail_server_id.id,
             }
             if mailing.reply_to_mode == 'email':
                 composer_values['reply_to'] = mailing.reply_to
 
             composer = self.env['mail.compose.message'].with_context(active_ids=res_ids).create(composer_values)
             composer.with_context(active_ids=res_ids).send_mail(auto_commit=True)
-            mailing.state = 'done'
+            #mailing.state = 'done'
         return True
 
     def convert_links(self):
@@ -625,8 +635,35 @@ class MassMailing(models.Model):
     def _process_mass_mailing_queue(self):
         mass_mailings = self.search([('state', 'in', ('in_queue', 'sending')), '|', ('schedule_date', '<', fields.Datetime.now()), ('schedule_date', '=', False)])
         for mass_mailing in mass_mailings:
-            if len(mass_mailing.get_remaining_recipients()) > 0:
-                mass_mailing.state = 'sending'
-                mass_mailing.send_mail()
-            else:
-                mass_mailing.state = 'done'
+            with self._lock:
+                try:
+                    if mass_mailing.id in MASS_MAILLING_LOCK:
+                        continue
+                    else:
+                        MASS_MAILLING_LOCK.append(mass_mailing.id)
+                        _logger.error('Locked Mass Mailing `%s` thread id `%s`.', mass_mailing['id'], thread.get_ident())
+                    remaining_recipients = mass_mailing.get_remaining_recipients()
+                    if len(remaining_recipients) > 0:
+                        mass_mailing.state = 'sending'
+                    else:
+                        mass_mailing.state = 'done'
+                except:
+                    with self._lock:
+                        if mass_mailing.id in MASS_MAILLING_LOCK:
+                            MASS_MAILLING_LOCK.remove(mass_mailing.id)
+                            _logger.error('Unlocked Mass Mailing `%s`.', mass_mailing['id'])
+                    raise
+
+            try:
+                if len(remaining_recipients) > 0:
+                    mass_mailing.send_mail()
+                    return
+            finally:
+                with self._lock:
+                    try:
+                        mass_mailing.state = 'done'
+                    except Exception as e:
+                        _logger.error(e)
+                    if mass_mailing.id in MASS_MAILLING_LOCK:
+                        MASS_MAILLING_LOCK.remove(mass_mailing.id)
+                        _logger.error('Unlocked Mass Mailing `%s` thread id `%s`.', mass_mailing['id'], thread.get_ident())
