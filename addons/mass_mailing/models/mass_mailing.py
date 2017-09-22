@@ -641,7 +641,7 @@ class MassMailing(models.Model):
                         continue
                     else:
                         MASS_MAILLING_LOCK.append(mass_mailing.id)
-                        _logger.error('Locked Mass Mailing `%s` thread id `%s`.', mass_mailing['id'], thread.get_ident())
+                        _logger.info('Locked Mass Mailing `%s` thread id `%s`.', mass_mailing['id'], thread.get_ident())
                     remaining_recipients = mass_mailing.get_remaining_recipients()
                     if len(remaining_recipients) > 0:
                         mass_mailing.state = 'sending'
@@ -651,7 +651,7 @@ class MassMailing(models.Model):
                     with self._lock:
                         if mass_mailing.id in MASS_MAILLING_LOCK:
                             MASS_MAILLING_LOCK.remove(mass_mailing.id)
-                            _logger.error('Unlocked Mass Mailing `%s`.', mass_mailing['id'])
+                            _logger.info('Unlocked Mass Mailing `%s`.', mass_mailing['id'])
                     raise
 
             try:
@@ -666,4 +666,4 @@ class MassMailing(models.Model):
                         _logger.error(e)
                     if mass_mailing.id in MASS_MAILLING_LOCK:
                         MASS_MAILLING_LOCK.remove(mass_mailing.id)
-                        _logger.error('Unlocked Mass Mailing `%s` thread id `%s`.', mass_mailing['id'], thread.get_ident())
+                        _logger.info('Unlocked Mass Mailing `%s` thread id `%s`.', mass_mailing['id'], thread.get_ident())
