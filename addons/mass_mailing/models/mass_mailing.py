@@ -634,28 +634,29 @@ class MassMailing(models.Model):
     @api.model
     def _process_mass_mailing_queue(self):
         global MASS_MAILING_LOCK
+        remaining_recipients=[]
         mass_mailings = self.search([('state', 'in', ('in_queue', 'sending')), '|', ('schedule_date', '<', fields.Datetime.now()), ('schedule_date', '=', False)])
         for mass_mailing in mass_mailings:
             with self._lock:
                 try:
                     if mass_mailing.id in MASS_MAILING_LOCK:
-                        _logger.info('MASS_MAILING_LOCK = %s ', ', '.join(MASS_MAILING_LOCK))
+                        _logger.info('MASS_MAILING_LOCK = %s ', ', '.join((str(i) for i in MASS_MAILING_LOCK)))
                         continue
                     else:
-                        _logger.info('MASS_MAILING_LOCK = %s ', ', '.join(MASS_MAILING_LOCK))
+                        _logger.info('MASS_MAILING_LOCK = %s ', ', '.join((str(i) for i in MASS_MAILING_LOCK)))
                         MASS_MAILING_LOCK.append(mass_mailing.id)
+                        _logger.info('MASS_MAILING_LOCK = %s ', ', '.join((str(i) for i in MASS_MAILING_LOCK)))
                         _logger.info('Locked Mass Mailing `%s` thread id `%s`.', mass_mailing.id, thread.get_ident())
                     remaining_recipients = mass_mailing.get_remaining_recipients()
                     if len(remaining_recipients) > 0:
                         mass_mailing.state = 'sending'
                     else:
                         mass_mailing.state = 'done'
-                except:
-                    with self._lock:
-                        if mass_mailing.id in MASS_MAILING_LOCK:
-                            MASS_MAILING_LOCK.remove(mass_mailing.id)
-                            _logger.info('Unlocked  Mass Mailing `%s` due the exception.', mass_mailing.id)
-                    raise
+                except Exception as e:
+                    _logger.error(e)
+                    if mass_mailing.id in MASS_MAILING_LOCK:
+                        MASS_MAILING_LOCK.remove(mass_mailing.id)
+                        _logger.error('Unlocked Mass Mailing `%s` due the exception.', mass_mailing.id)
 
             try:
                 if len(remaining_recipients) > 0:
