@@ -640,13 +640,11 @@ class MassMailing(models.Model):
             with self._lock:
                 try:
                     if mass_mailing.id in MASS_MAILING_LOCK:
-                        _logger.info('MASS_MAILING_LOCK = %s ', ', '.join((str(i) for i in MASS_MAILING_LOCK)))
                         continue
                     else:
-                        _logger.info('MASS_MAILING_LOCK = %s ', ', '.join((str(i) for i in MASS_MAILING_LOCK)))
                         MASS_MAILING_LOCK.append(mass_mailing.id)
-                        _logger.info('MASS_MAILING_LOCK = %s ', ', '.join((str(i) for i in MASS_MAILING_LOCK)))
-                        _logger.info('Locked Mass Mailing `%s` thread id `%s`.', mass_mailing.id, thread.get_ident())
+                        _logger.debug('Locked Mass Mailing `%s` thread id `%s`.', mass_mailing.id, thread.get_ident())
+                        _logger.debug('MASS_MAILING_LOCK = %s ', ', '.join((str(i) for i in MASS_MAILING_LOCK)))
                     remaining_recipients = mass_mailing.get_remaining_recipients()
                     if len(remaining_recipients) > 0:
                         mass_mailing.state = 'sending'
@@ -670,4 +668,5 @@ class MassMailing(models.Model):
                         _logger.error(e)
                     if mass_mailing.id in MASS_MAILING_LOCK:
                         MASS_MAILING_LOCK.remove(mass_mailing.id)
-                        _logger.info('Unlocked Mass Mailing `%s` thread id `%s`.', mass_mailing.id, thread.get_ident())
+                        _logger.debug('Unlocked Mass Mailing `%s` thread id `%s`.', mass_mailing.id, thread.get_ident())
+                        _logger.debug('MASS_MAILING_LOCK = %s ', ', '.join((str(i) for i in MASS_MAILING_LOCK)))
