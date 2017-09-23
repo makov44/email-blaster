@@ -13,7 +13,7 @@ import thread
 
 _logger = logging.getLogger(__name__)
 
-MASS_MAILLING_LOCK = []
+MASS_MAILING_LOCK = []
 
 
 class MassMailingTag(models.Model):
@@ -633,15 +633,16 @@ class MassMailing(models.Model):
 
     @api.model
     def _process_mass_mailing_queue(self):
+        global MASS_MAILING_LOCK
         mass_mailings = self.search([('state', 'in', ('in_queue', 'sending')), '|', ('schedule_date', '<', fields.Datetime.now()), ('schedule_date', '=', False)])
         for mass_mailing in mass_mailings:
             with self._lock:
                 try:
-                    if mass_mailing.id in MASS_MAILLING_LOCK:
+                    if mass_mailing.id in MASS_MAILING_LOCK:
                         continue
                     else:
-                        MASS_MAILLING_LOCK.append(mass_mailing.id)
-                        _logger.info('Locked Mass Mailing `%s` thread id `%s`.', mass_mailing['id'], thread.get_ident())
+                        MASS_MAILING_LOCK.append(mass_mailing.id)
+                        _logger.info('Locked Mass Mailing `%s` thread id `%s`.', mass_mailing.id, thread.get_ident())
                     remaining_recipients = mass_mailing.get_remaining_recipients()
                     if len(remaining_recipients) > 0:
                         mass_mailing.state = 'sending'
@@ -649,9 +650,9 @@ class MassMailing(models.Model):
                         mass_mailing.state = 'done'
                 except:
                     with self._lock:
-                        if mass_mailing.id in MASS_MAILLING_LOCK:
-                            MASS_MAILLING_LOCK.remove(mass_mailing.id)
-                            _logger.info('Unlocked Mass Mailing `%s`.', mass_mailing['id'])
+                        if mass_mailing.id in MASS_MAILING_LOCK:
+                            MASS_MAILING_LOCK.remove(mass_mailing.id)
+                            _logger.info('Unlocked  Mass Mailing `%s` due the exception.', mass_mailing.id)
                     raise
 
             try:
@@ -664,6 +665,6 @@ class MassMailing(models.Model):
                         mass_mailing.state = 'done'
                     except Exception as e:
                         _logger.error(e)
-                    if mass_mailing.id in MASS_MAILLING_LOCK:
-                        MASS_MAILLING_LOCK.remove(mass_mailing.id)
-                        _logger.info('Unlocked Mass Mailing `%s` thread id `%s`.', mass_mailing['id'], thread.get_ident())
+                    if mass_mailing.id in MASS_MAILING_LOCK:
+                        MASS_MAILING_LOCK.remove(mass_mailing.id)
+                        _logger.info('Unlocked Mass Mailing `%s` thread id `%s`.', mass_mailing.id, thread.get_ident())
