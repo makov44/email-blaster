@@ -641,6 +641,7 @@ class MassMailing(models.Model):
                     if mass_mailing.id in MASS_MAILING_LOCK:
                         continue
                     else:
+                        _logger.info('MASS_MAILING_LOCK[0] = ', MASS_MAILING_LOCK[0])
                         MASS_MAILING_LOCK.append(mass_mailing.id)
                         _logger.info('Locked Mass Mailing `%s` thread id `%s`.', mass_mailing.id, thread.get_ident())
                     remaining_recipients = mass_mailing.get_remaining_recipients()
