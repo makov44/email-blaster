@@ -45,10 +45,10 @@ class MassMailingReport(models.Model):
                     mm.email_from
                 FROM
                     mail_mail_statistics as ms
+                    left join link_tracker_click as ltc ON (ltc.mail_stat_id=ms.id)
                     left join mail_mass_mailing as mm ON (ms.mass_mailing_id=mm.id)
                     left join mail_mass_mailing_campaign as mc ON (ms.mass_mailing_campaign_id=mc.id)
                     left join utm_campaign as utm_campaign ON (mc.campaign_id = utm_campaign.id)
-                    left join utm_source as utm_source ON (mm.source_id = utm_source.id)
-                    left join link_tracker_click as ltc ON (ltc.mass_mailing_id=mm.id)
+                    left join utm_source as utm_source ON (mm.source_id = utm_source.id)                  
                 GROUP BY ms.scheduled, utm_source.name, utm_campaign.name, mm.state, mm.email_from
             )""")
