@@ -17,6 +17,7 @@ class MassMailingReport(models.Model):
     opened = fields.Integer(readonly=True)
     bounced = fields.Integer(readonly=True)
     replied = fields.Integer(readonly=True)
+    clicked = fields.Integer(readonly=True)
     state = fields.Selection([('draft', 'Draft'), ('test', 'Tested'), ('done', 'Sent')],
         string='Status', readonly=True)
     email_from = fields.Char('From', readonly=True)
@@ -39,6 +40,7 @@ class MassMailingReport(models.Model):
                     (count(ms.sent) - count(ms.bounced)) as delivered,
                     count(ms.opened) as opened,
                     count(ms.replied) as replied,
+                    count(ltc.id) as clicked,
                     mm.state,
                     mm.email_from
                 FROM
@@ -47,5 +49,6 @@ class MassMailingReport(models.Model):
                     left join mail_mass_mailing_campaign as mc ON (ms.mass_mailing_campaign_id=mc.id)
                     left join utm_campaign as utm_campaign ON (mc.campaign_id = utm_campaign.id)
                     left join utm_source as utm_source ON (mm.source_id = utm_source.id)
+                    left join link_tracker_click as ltc ON (ltc.mass_mailing_id=mm.id)
                 GROUP BY ms.scheduled, utm_source.name, utm_campaign.name, mm.state, mm.email_from
             )""")
