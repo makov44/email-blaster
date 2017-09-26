@@ -51,6 +51,8 @@ class MailMailStats(models.Model):
                                     store=True)
     recipient = fields.Char(compute="_compute_recipient")
     status = fields.Char(string="Last Status")
+    opened_by = fields.Char(string="Opened by IP")
+    opened_user_agent = fields.Char(string="Opener User Agent")
 
     @api.depends('sent', 'opened', 'replied', 'bounced', 'exception')
     def _compute_state(self):
@@ -101,9 +103,11 @@ class MailMailStats(models.Model):
             base_domain = ['&'] + domain + base_domain
         return self.search(base_domain)
 
-    def set_opened(self, mail_mail_ids=None, mail_message_ids=None):
+    def set_opened(self, mail_mail_ids=None, mail_message_ids=None, ip=None, user_agent_string=None):
         statistics = self._get_records(mail_mail_ids, mail_message_ids, [('opened', '=', False)])
-        statistics.write({'opened': fields.Datetime.now()})
+        statistics.write({'opened': fields.Datetime.now(),
+                          'opened_by': ip,
+                          'opened_user_agent': user_agent_string})
         return statistics
 
     def set_replied(self, mail_mail_ids=None, mail_message_ids=None):
