@@ -38,6 +38,7 @@ class link_tracker(models.Model):
     url = fields.Char(string='Target URL', required=True)
     count = fields.Integer(string='Number of Clicks', compute='_compute_count', store=True)
     short_url = fields.Char(string='Tracked URL', compute='_compute_short_url')
+    full_url = fields.Char(string='Tracked URL', compute='_compute_full_url')
     link_click_ids = fields.One2many('link.tracker.click', 'link_id', string='Clicks')
     title = fields.Char(string='Page Title', store=True)
     favicon = fields.Char(string='Favicon', compute='_compute_favicon', store=True)
@@ -78,6 +79,14 @@ class link_tracker(models.Model):
     def _compute_short_url(self):
         base_url = self.env['ir.config_parameter'].get_param('web.base.url')
         self.short_url = urljoin(base_url, '/r/%(code)s' % {'code': self.code})
+
+    @api.one
+    @api.depends('code')
+    def _compute_full_url(self):
+        mail_stat_id = self.link_click_ids and any(self.link_click_ids) and \
+                       self.link_click_ids[0].mail_stat_id and self.link_click_ids[0].mail_stat_id.id or ''
+        base_url = self.env['ir.config_parameter'].get_param('web.base.url')
+        self.full_url = urljoin(base_url, '/r/%(code)s/m/%(stat)s' % {'code': self.code, 'stat': mail_stat_id})
 
     @api.one
     def _compute_short_url_host(self):
@@ -231,10 +240,11 @@ class link_tracker_click(models.Model):
     click_date = fields.Date(string='Create Date')
     link_id = fields.Many2one('link.tracker', 'Link', required=True, ondelete='cascade')
     ip = fields.Char(string='Internet Protocol')
+    user_agent_string = fields.Char(string='User Agent String')
     country_id = fields.Many2one('res.country', 'Country')
 
     @api.model
-    def add_click(self, code, ip, country_code, stat_id=False):
+    def add_click(self, code, ip, country_code, user_agent_string=False, stat_id=False):
         self = self.sudo()
         code_rec = self.env['link.tracker.code'].search([('code', '=', code)])
 
@@ -251,7 +261,8 @@ class link_tracker_click(models.Model):
                 'create_date': datetime.date.today(),
                 'ip': ip,
                 'country_id': country_record.id,
-                'mail_stat_id': stat_id
+                'mail_stat_id': stat_id,
+                'user_agent_string': user_agent_string
             }
 
             if stat_id:

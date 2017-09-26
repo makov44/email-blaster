@@ -39,7 +39,7 @@
                         <group>
                             <field name="title"/>
                             <field name="url"/>
-                            <field name="short_url"/>
+                            <field name="full_url"/>
                         </group>
 
                         <group>
@@ -87,7 +87,7 @@
                     <field name="create_date"/>
                     <field name="title"/>
                     <field name="url"/>
-                    <field name="short_url"/>
+                    <field name="full_url"/>
                     <field name="count"/>
                 </tree>
             </field>
@@ -140,6 +140,7 @@
                     <field name="link_id"/>
                     <field name="ip"/>
                     <field name="country_id"/>
+                    <field name="user_agent_string"/>
                 </tree>
             </field>
         </record>

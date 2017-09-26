@@ -11,6 +11,8 @@ class LinkTracker(http.Controller):
     @http.route('/r/<string:code>', type='http', auth='none', website=True)
     def full_url_redirect(self, code, **post):
         country_code = request.session.geoip and request.session.geoip.get('country_code') or False
-        request.env['link.tracker.click'].add_click(code, request.httprequest.remote_addr, country_code, stat_id=False)
+        user_agent_string = request.httprequest.user_agent and request.httprequest.user_agent.string or False
+        ip = request.httprequest.remote_addr
+        request.env['link.tracker.click'].add_click(code, ip, country_code, user_agent_string, stat_id=False)
         redirect_url = request.env['link.tracker'].get_url_from_code(code)
         return werkzeug.utils.redirect(redirect_url or '', 301)
