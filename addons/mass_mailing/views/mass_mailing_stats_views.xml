@@ -58,13 +58,15 @@
                         <field name="opened"/>
                         <field name="replied"/>
                         <field name="bounced"/>
-                        <field name="status"/>
                     </group>
                     <group>
                         <field name="mass_mailing_id"/>
                         <field name="mass_mailing_campaign_id"/>
                         <field name="model"/>
                         <field name="res_id"/>
+                        <field name="status"/>
+                        <field name="opened_by"/>
+                        <field name="opened_user_agent"/>
                     </group>
                 </group>
             </form>

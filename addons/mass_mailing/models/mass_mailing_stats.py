@@ -52,7 +52,7 @@ class MailMailStats(models.Model):
     recipient = fields.Char(compute="_compute_recipient")
     status = fields.Char(string="Last Status")
     opened_by = fields.Char(string="Opened by IP")
-    opened_user_agent = fields.Char(string="Opener User Agent")
+    opened_user_agent = fields.Char(string="Opened by User Agent")
 
     @api.depends('sent', 'opened', 'replied', 'bounced', 'exception')
     def _compute_state(self):
