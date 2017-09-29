@@ -1100,7 +1100,8 @@ class MailThread(models.AbstractModel):
 
         # Check if it is auto-reply message
         subject = tools.decode_message_header(message, 'Subject')
-        subject_filter = ['Automatic reply', 'Auto-Reply', 'Out of the office']
+        subject_filter = ['Automatic reply', 'Auto-Reply', 'Out of the office', 'Out of Office', 'AutoReply', 'Auto Reply',
+                          'Your email requires verification', 'Out of office', 'Request received', 'Auto reply']
         if any(item in subject for item in subject_filter):
             _logger.info('Routing mail with Message-Id %s: not routing auto-reply email from %s to %s with a subject %s',
                          message_id, email_from, email_to, subject)
