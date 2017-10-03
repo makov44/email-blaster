@@ -65,6 +65,7 @@
                     <field name="position"/>
                     <field name="phone_number"/>
                     <field name="company"/>
+                    <field name="category"/>
                     <field name="list_id"/>
                     <field name="message_bounce"/>
                     <field name="create_date"/>
