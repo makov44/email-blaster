@@ -13,6 +13,13 @@ WHERE id IN (SELECT id
                      FROM public.emails) t
               WHERE t.rnum > 1);
 
+SELECT id, email, domain, type, confidence, sources, first_name, last_name, "position", linkedin, twitter, phone_number, webmail, pattern, organization, e.category_id, ct.description
+	FROM public.emails as e
+    inner join categories as ct on e.category_id = ct.category_id
+    where e.category_id = 272
+  ﻿ order by e.email
+    limit 69240;
+
 select case  when opened_user_agent like '%iPhone%' then 'iPhone'
             when opened_user_agent like '%iPad%' then 'iPad'
             when opened_user_agent like '%Macintosh%' then 'Mac'
@@ -44,3 +51,4 @@ select case  when user_agent_string like '%iPhone%' then 'iPhone'
 where user_agent_string is not Null
 group by user_agent_adj
 order by count(*) desc
+

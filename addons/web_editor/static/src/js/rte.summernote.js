@@ -552,11 +552,12 @@ $.summernote.pluginEvents.codeview = function (event, editor, layoutInfo, enable
         }
 
         if (!$textarea.length) {
+            $("#oe_snippets").css("z-index", "-1");
             // init and create texarea
             var html = prettify_html($editor.prop("innerHTML"));
             $editor.parent().css({
                 'position': 'absolute',
-                'top': 0,
+                'top': 35,
                 'bottom': 0,
                 'left': 0,
                 'right': 0
@@ -577,6 +578,7 @@ $.summernote.pluginEvents.codeview = function (event, editor, layoutInfo, enable
             $editor.before($textarea);
             $editor.hide();
         } else {
+            $("#oe_snippets").css("z-index", "1003");
             // save changes
             $editor.prop('innerHTML', $textarea.val().replace(/\s*\n\s*/g, '')).trigger('content_changed');
             $textarea.remove();
