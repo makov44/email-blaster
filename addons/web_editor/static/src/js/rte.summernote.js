@@ -580,6 +580,9 @@ $.summernote.pluginEvents.codeview = function (event, editor, layoutInfo, enable
         } else {
             $("#oe_snippets").css("z-index", "1003");
             // save changes
+             $editor.parent().css({
+                'left': 210
+            });
             $editor.prop('innerHTML', $textarea.val().replace(/\s*\n\s*/g, '')).trigger('content_changed');
             $textarea.remove();
             $editor.show();
