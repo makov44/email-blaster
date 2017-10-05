@@ -6,12 +6,13 @@ select t1._count, t1.res_id, t2.email  from (SELECT t0.res_id , count(*) as _cou
     order by t1._count desc;
 
 
-SELECT email, category_id FROM public.emails
+SELECT *   FROM public.mail_mass_mailing_contact
 WHERE id IN (SELECT id
               FROM (SELECT id,
-                             ROW_NUMBER() OVER (partition BY email, category_id ORDER BY id desc) AS rnum
-                     FROM public.emails) t
+                             ROW_NUMBER() OVER (partition BY email ORDER BY id ) AS rnum
+                     FROM public.mail_mass_mailing_contact) t
               WHERE t.rnum > 1);
+
 
 SELECT id, email, domain, type, confidence, sources, first_name, last_name, "position", linkedin, twitter, phone_number, webmail, pattern, organization, e.category_id, ct.description
 	FROM public.emails as e
