@@ -1098,35 +1098,38 @@ class MailThread(models.AbstractModel):
                          message_id, email_from, email_to)
             return []
 
-        # Check if it is auto-reply message
-        subject = tools.decode_message_header(message, 'Subject')
-        subject_filter = ['Automatic reply', 'automated response', 'auto responder', 'Automated Message', 'Auto-Reply',
-                          'Out of Office', 'AutoReply', 'Auto Reply', 'Automatische Antwort', 'Automated Reply', 'Automatische Antwort'
-                          'Your email requires verification', 'Thank you for your email','Out of office', 'I am out of town', 'Request received',
-                          'Message Received', 'Auto reply', 'Request Receipt Acknowledgement',
-                          'AUTO RESPONSE', 'Auto Insurance Inquiry', 'SUSPECTED BULK/SPAM', 'Spam', 'mail.message()'
-                          'Your email has been received', 'out of the office', 'Automatic Response', 'E-mail Inactive',
-                          'We have received your request', 'Closed email account', 'Email Receipt Confirmation',
-                          'Acknowledgement of Receipt', 'Ticket Received', 'Support Ticket Opened', 'Your Ticket has been created',
-                          'Ticket #', 'Ticket#', '(verification)', '(sender validation)',
-                          'Email address has changed', 'Change of email Address', 'Invalid Email Address', 'Inactive Email Account',
-                          'This email address is no longer active', 'New email address',
-                          'This email box is not monitored', 'E-mail Receipt Confirmation', 'Email Address No Longer Used']
-        if any(item.lower() in subject.lower() for item in subject_filter):
-            _logger.info('Routing mail with Message-Id %s: not routing auto-reply email from %s to %s with a subject %s',
-                         message_id, email_from, email_to, subject)
-            return []
+        try:
+            # Check if it is auto-reply message
+            subject = tools.decode_message_header(message, 'Subject')
+            subject_filter = ['Automatic reply', 'automated response', 'auto responder', 'Automated Message', 'Auto-Reply',
+                              'Out of Office', 'AutoReply', 'Auto Reply', 'Automatische Antwort', 'Automated Reply', 'Automatische Antwort'
+                              'Your email requires verification', 'Thank you for your email','Out of office', 'I am out of town', 'Request received',
+                              'Message Received', 'Auto reply', 'Request Receipt Acknowledgement',
+                              'AUTO RESPONSE', 'Auto Insurance Inquiry', 'SUSPECTED BULK/SPAM', 'Spam', 'mail.message()'
+                              'Your email has been received', 'out of the office', 'Automatic Response', 'E-mail Inactive',
+                              'We have received your request', 'Closed email account', 'Email Receipt Confirmation',
+                              'Acknowledgement of Receipt', 'Ticket Received', 'Support Ticket Opened', 'Your Ticket has been created',
+                              'Ticket #', 'Ticket#', '(verification)', '(sender validation)',
+                              'Email address has changed', 'Change of email Address', 'Invalid Email Address', 'Inactive Email Account',
+                              'This email address is no longer active', 'New email address',
+                              'This email box is not monitored', 'E-mail Receipt Confirmation', 'Email Address No Longer Used']
+            if any(item.lower() in subject.lower() for item in subject_filter):
+                _logger.info('Routing mail with Message-Id %s: not routing auto-reply email from %s to %s with a subject %s',
+                             message_id, email_from, email_to, subject)
+                return []
 
-        body = message_dict['body']
-        body_filter = ['I am out of the office', 'This email address is no longer valid', 'I will be out of the office',
-                       'This is an automated response', 'We’ve received your message, and look forward to responding as quickly as possible',
-                       'You will receive a response within 48 hours', 'My inbox is protected by ChoiceMail One', 'This is an automatically generated message']
-        if body and any(item.lower() in body.lower() for item in body_filter):
-            _logger.info(
-                'Routing mail with Message-Id %s: not routing auto-reply email from %s to %s with a subject %s',
-                message_id, email_from, email_to, subject)
-            return []
-
+            body = message_dict['body'] and message_dict['body'].encode("utf-8", "ignore")
+            body = body[0:300]
+            body_filter = ['I am out of the office', 'This email address is no longer valid', 'I will be out of the office',
+                           'This is an automated response', 'We’ve received your message, and look forward to responding as quickly as possible',
+                           'You will receive a response within 48 hours', 'My inbox is protected by ChoiceMail One', 'This is an automatically generated message']
+            if body and any(item.lower() in body.lower() for item in body_filter):
+                _logger.info(
+                    'Routing mail with Message-Id %s: not routing auto-reply email from %s to %s with a subject %s',
+                    message_id, email_from, email_to, subject)
+                return []
+        except Exception as e:
+            _logger.exception(e)
 
         # 1. Check if message is a reply on a thread
         msg_references = [ref for ref in tools.mail_header_msgid_re.findall(thread_references) if 'reply_to' not in ref]
