@@ -1106,7 +1106,7 @@ class MailThread(models.AbstractModel):
                               'Your email requires verification', 'Thank you for your email','Out of office', 'I am out of town', 'Request received',
                               'Message Received', 'Auto reply', 'Request Receipt Acknowledgement', 'Email acknowledgement',
                               'AUTO RESPONSE', 'Auto Insurance Inquiry', 'SUSPECTED BULK/SPAM', 'Spam', 'mail.message()'
-                              'Your email has been received', 'out of the office', 'Automatic Response', 'E-mail Inactive',
+                              'Your email has been received', 'out of the office', 'Automatic Response', 'E-mail Inactive', 'Email forwarded to',
                               'We have received your request', 'Closed email account', 'Email Receipt Confirmation',
                               'Acknowledgement of Receipt', 'Ticket Received', 'Support Ticket Opened', 'Your Ticket has been created',
                               'Ticket #', 'Ticket#', '(verification)', '(sender validation)', 'INACTIVE ACCOUNT' , 'Your Message is Important to Me',

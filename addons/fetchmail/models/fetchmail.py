@@ -263,12 +263,12 @@ class FetchmailServer(models.Model):
         MailThread = self.env['mail.thread']
 
         for server in self:
-            count, failed = 0, 0
             _logger.info('start checking for new bounced email logs on %s server %s', server.type, server.name)
             additionnal_context['fetchmail_server_id'] = server.id
             additionnal_context['server_type'] = server.type
             cnx = None
             cursor = None
+            mail_logs = []
             try:
                 cnx = mysql.connector.connect(user=server.mysql_user,
                                         password=server.mysql_password,
@@ -283,15 +283,8 @@ class FetchmailServer(models.Model):
                 cursor.execute(query)
                 for mail_log in cursor:
                     mail_log = dict(zip(cursor.column_names, mail_log))
-                    try:
-                        MailThread.with_context(**additionnal_context).maillog_process(mail_log)
-                    except Exception:
-                        _logger.warn('Failed to process email log from %s server %s. Message ID %s',
-                                     server.type, server.name, mail_log['message_id'], exc_info=True)
-                        failed += 1
-                    count += 1
-                _logger.info("Fetched %d email logs for last hour on %s server %s; %d succeeded, %d failed.", count, server.type,
-                                 server.name, (count - failed), failed)
+                    mail_logs.append(mail_log)
+
             except Exception:
                 _logger.warn('Failed to process email logs from %s server %s.', server.type, server.name, exc_info=True)
             finally:
@@ -303,6 +296,21 @@ class FetchmailServer(models.Model):
                 except Exception:
                     # ignored, just a consequence of the previous exception
                     pass
+
+            count, failed = 0, 0
+            for mail_log in mail_logs:
+                try:
+                    MailThread.with_context(**additionnal_context).maillog_process(mail_log)
+                except Exception:
+                    _logger.warn('Failed to process email log from %s server %s. Message ID %s',
+                                 server.type, server.name, mail_log['message_id'], exc_info=True)
+                    failed += 1
+                count += 1
+
+            _logger.info("Fetched %d email logs for last hour on %s server %s; %d succeeded, %d failed.", count,
+                         server.type,
+                         server.name, (count - failed), failed)
+
 
     @api.model
     def _update_cron(self):
