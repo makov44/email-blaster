@@ -1102,7 +1102,8 @@ class MailThread(models.AbstractModel):
             # Check if it is auto-reply message
             subject = tools.decode_message_header(message, 'Subject')
             subject_filter = ['Automatic reply', 'automated response', 'auto responder', 'Automated Message', 'Auto-Reply',
-                              'Out of Office', 'AutoReply', 'Auto Reply', 'Autoresponse', 'Automatische Antwort', 'Automated Reply', 'Automatische Antwort'
+                              'Out of Office', 'AutoReply', 'Auto Reply', 'Autoresponse', 'Automatische Antwort', 'Automatisch antwoord',
+                              'Automated Reply', 'Automatische Antwort',
                               'Your email requires verification', 'Thank you for your email','Out of office', 'I am out of town', 'Request received',
                               'Message Received', 'Auto reply', 'Request Receipt Acknowledgement', 'Email acknowledgement',
                               'AUTO RESPONSE', 'Auto Insurance Inquiry', 'SUSPECTED BULK/SPAM', 'Spam', 'mail.message()'
@@ -1110,7 +1111,7 @@ class MailThread(models.AbstractModel):
                               'We have received your request', 'Closed email account', 'Email Receipt Confirmation',
                               'Acknowledgement of Receipt', 'Ticket Received', 'Support Ticket Opened', 'Your Ticket has been created',
                               'Ticket #', 'Ticket#', '(verification)', '(sender validation)', 'INACTIVE ACCOUNT' , 'Your Message is Important to Me',
-                              'Email address has changed', 'Change of email Address', 'Invalid Email Address', 'Inactive Email Account',
+                              'Email address has changed', 'Change of email Address', 'Invalid Email Address', 'Inactive Email Account', 'Your email requires verification',
                               'This email address is no longer active', 'New email address', 'no longer using this email address',
                               'This email box is not monitored', 'E-mail Receipt Confirmation', 'Email Address No Longer Used' , 'his email address is not monitored',
                               'Your Email Request Has Been Received']
@@ -1122,7 +1123,7 @@ class MailThread(models.AbstractModel):
             body = message_dict['body'] and message_dict['body'].encode("utf-8", "ignore")
             body = body[0:300]
             body_filter = ['I am out of the office', 'I am currently out of the office', 'This email address is no longer valid',
-                           'This email is no longer active', 'I will be out of the office', 'This is an auto reply',
+                           'This email is no longer active', 'I will be out of the office', 'This is an auto reply', 'I will be out of office',
                            'This is an automated response', 'We’ve received your message, and look forward to responding as quickly as possible',
                            'You will receive a response within 48 hours', 'My inbox is protected by ChoiceMail One',
                            'This is an automatically generated message', 'This mailbox is no longer in use']
