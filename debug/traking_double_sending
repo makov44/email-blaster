@@ -11,7 +11,7 @@ WHERE id IN (SELECT id
               FROM (SELECT id,
                              ROW_NUMBER() OVER (partition BY email ORDER BY id ) AS rnum
                      FROM public.mail_mass_mailing_contact) t
-              WHERE t.rnum > 1);
+              WHERE t.rnum > 1) and opt_out=FALSE;
 
 
 SELECT id, email, domain, type, confidence, sources, first_name, last_name, "position", linkedin, twitter, phone_number, webmail, pattern, organization, e.category_id, ct.description
@@ -25,31 +25,47 @@ select case  when opened_user_agent like '%iPhone%' then 'iPhone'
             when opened_user_agent like '%iPad%' then 'iPad'
             when opened_user_agent like '%Macintosh%' then 'Mac'
             when opened_user_agent like '%Android%' then 'Android'
-            when opened_user_agent like '%Android%' then 'Android'
             when opened_user_agent like '%GoogleImageProxy%' then 'GoogleImageProxy'
             when opened_user_agent like '%Mozilla/5.0 (Windows NT%' then 'Mozilla/5.0 (Windows NT)'
-            when opened_user_agent like '%Microsoft Outlook%' then 'Microsoft Outlook'
+            when opened_user_agent like '%Microsoft Outlook%' or opened_user_agent like '%Outlook-Express/%' then 'Microsoft Outlook'
             when opened_user_agent like '%Mozilla/4.0 (compatible%' then 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident)'
             else opened_user_agent
           end   as user_agent_adj , count(*) from mail_mail_statistics
-where (opened is not Null) and (opened_user_agent is not Null ) and mass_mailing_id in (205, 206)
+where (opened is not Null) and (opened_user_agent is not Null ) and mass_mailing_id in (205, 206) and EXTRACT(EPOCH FROM (opened - sent)) > 60
 group by user_agent_adj
 order by count(*) desc;
 
+select case when EXTRACT(EPOCH FROM (opened - sent)) > 300 then '300 < s'
+            when EXTRACT(EPOCH FROM (opened - sent)) <= 300 and EXTRACT(EPOCH FROM (opened - sent)) > 200  then '200 < s < 300'
+            when EXTRACT(EPOCH FROM (opened - sent)) <= 200 and EXTRACT(EPOCH FROM (opened - sent)) > 100  then '100 < s < 200'
+            when EXTRACT(EPOCH FROM (opened - sent)) <= 100 and EXTRACT(EPOCH FROM (opened - sent)) > 60  then '60 < s < 100'
+            when EXTRACT(EPOCH FROM (opened - sent)) <= 60 and EXTRACT(EPOCH FROM (opened - sent)) > 20  then '20 < s < 60'
+            when EXTRACT(EPOCH FROM (opened - sent)) <= 20 and EXTRACT(EPOCH FROM (opened - sent)) > 10  then '10 < s < 20'
+            when EXTRACT(EPOCH FROM (opened - sent)) <= 10 then 's < 10'
+            end  as who_is_it , count(*) from mail_mail_statistics
+where (opened is not Null) and (opened_user_agent is not Null ) and mass_mailing_id in (205, 206)
+group by who_is_it
+order by count(*) desc;
 
+select case when EXTRACT(EPOCH FROM (opened - sent)) > 60 then 'human' else 'robot'
+            end  as who_is_it , count(*) from mail_mail_statistics
+where (opened is not Null) and (opened_user_agent is not Null ) and mass_mailing_id in (205, 206)
+group by who_is_it
+order by count(*) desc;
 
 select case  when user_agent_string like '%iPhone%' then 'iPhone'
             when user_agent_string like '%iPad%' then 'iPad'
             when user_agent_string like '%Macintosh%' then 'Mac'
             when user_agent_string like '%Android%' then 'Android'
-            when user_agent_string like '%Android%' then 'Android'
-            when user_agent_string like '%GoogleImageProxy%' then 'GoogleImageProxy'
             when user_agent_string like '%Mozilla/5.0 (Windows NT%' then 'Mozilla/5.0 (Windows NT)'
-            when user_agent_string like '%Microsoft Outlook%' then 'Microsoft Outlook'
             when user_agent_string like '%Mozilla/4.0 (compatible%' then 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident)'
-            else user_agent_string
-          end   as user_agent_adj , count(*) from link_tracker_click
-where user_agent_string is not Null and mass_mailing_id in (205, 206)
+            when user_agent_string like '%GoogleImageProxy%' then 'GoogleImageProxy'
+            when user_agent_string like '%Microsoft Outlook%' or user_agent_string like '%Outlook-Express/%' then 'Microsoft Outlook'
+            else 'Others'
+           end   as user_agent_adj , count(*)
+           from link_tracker_click as l
+           left join mail_mail_statistics as st on st.id = l.mail_stat_id
+where user_agent_string is not Null and l.mass_mailing_id in (205, 206) and EXTRACT(EPOCH FROM (st.opened - st.sent)) > 100
 group by user_agent_adj
 order by count(*) desc
 
