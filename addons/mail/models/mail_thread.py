@@ -1111,7 +1111,7 @@ class MailThread(models.AbstractModel):
                               'We have received your request', 'Closed email account', 'Email Receipt Confirmation',
                               'Acknowledgement of Receipt', 'Ticket Received', 'Support Ticket Opened', 'Your Ticket has been created',
                               'Ticket #', 'Ticket#', '(verification)', '(sender validation)', 'INACTIVE ACCOUNT' , 'Your Message is Important to Me',
-                              'Email address has changed', 'Change of email Address', 'Invalid Email Address', 'Inactive Email Account', 'Your email requires verification',
+                              'Email address has changed', 'Change of email Address', 'Invalid Email Address', 'Inactive Email Account', 'email requires verification',
                               'This email address is no longer active', 'New email address', 'no longer using this email address',
                               'This email box is not monitored', 'E-mail Receipt Confirmation', 'Email Address No Longer Used' , 'his email address is not monitored',
                               'Your Email Request Has Been Received']
@@ -1126,7 +1126,7 @@ class MailThread(models.AbstractModel):
                            'This email is no longer active', 'I will be out of the office', 'This is an auto reply', 'I will be out of office',
                            'This is an automated response', 'We’ve received your message, and look forward to responding as quickly as possible',
                            'You will receive a response within 48 hours', 'My inbox is protected by ChoiceMail One',
-                           'This is an automatically generated message', 'This mailbox is no longer in use']
+                           'This is an automatically generated message', 'This mailbox is no longer in use', 'Your Ticket has been received']
             if body and any(item.lower() in body.lower() for item in body_filter):
                 _logger.info(
                     'Routing mail with Message-Id %s: not routing auto-reply email from %s to %s with a subject %s',
