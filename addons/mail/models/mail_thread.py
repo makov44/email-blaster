@@ -1103,18 +1103,19 @@ class MailThread(models.AbstractModel):
             subject = tools.decode_message_header(message, 'Subject')
             subject_filter = ['Automatic reply', 'automated response', 'auto responder', 'Automated Message', 'Auto-Reply',
                               'Out of Office', 'AutoReply', 'Auto Reply', 'Autoresponse', 'Automatische Antwort', 'Automatisch antwoord',
-                              'Automated Reply', 'Automatische Antwort',
+                              'Automated Reply', 'Automatische Antwort', 'Auto-generated email response',
                               'Your email requires verification', 'Thank you for your email','Out of office', 'I am out of town', 'Request received',
                               'Message Received', 'Auto reply', 'Request Receipt Acknowledgement', 'Email acknowledgement',
                               'AUTO RESPONSE', 'Auto Insurance Inquiry', 'SUSPECTED BULK/SPAM', 'Spam', 'mail.message()'
                               'Your email has been received', 'out of the office', 'Automatic Response', 'E-mail Inactive', 'Email forwarded to',
                               'We have received your request', 'Closed email account', 'Email Receipt Confirmation', 'Your email has been received',
-                              'Acknowledgement of Receipt', 'Ticket Received', 'Support Ticket Opened', 'Your Ticket has been created',
+                              'Acknowledgement of Receipt', 'Ticket Received', 'Support Ticket Opened', 'Your Ticket has been created', 'A ticket has been opened for you',
                               'Ticket #', 'Ticket#', '(verification)', '(sender validation)', 'INACTIVE ACCOUNT' , 'Your Message is Important to Me',
                               'Email address has changed', 'Change of email Address', 'Invalid Email Address', 'Inactive Email Account', 'email requires verification',
-                              'This email address is no longer active', 'New email address', 'no longer using this email address',
+                              'This email address is no longer active', "email inactive",  'new email address', 'no longer using this email address',
                               'This email box is not monitored', 'E-mail Receipt Confirmation', 'Email Address No Longer Used' , 'his email address is not monitored',
-                              'Your Email Request Has Been Received']
+                              'Your Email Request Has Been Received', 'Your message has been received', 'UNDELIVERABLE EMAIL', 'Thank you for submitting your resume',
+                              'Thank you for your recent inquiry', 'Thank you for your Inquiry']
             if any(item.lower() in subject.lower() for item in subject_filter):
                 _logger.info('Routing mail with Message-Id %s: not routing auto-reply email from %s to %s with a subject %s',
                              message_id, email_from, email_to, subject)
@@ -1125,9 +1126,12 @@ class MailThread(models.AbstractModel):
             body_filter = ['I am out of the office', 'I am currently out of the office', 'This email address is no longer valid',
                            'This email is no longer active', 'This account is no longer active', 'I will be out of the office', 'This is an auto reply', 'I will be out of office',
                            'This is an automated response', 'We’ve received your message, and look forward to responding as quickly as possible',
-                           'You will receive a response within 48 hours', 'We are working diligently to respond within 48 hours', 'My inbox is protected by ChoiceMail One',
-                           'This is an automatically generated message', 'This mailbox is no longer in use', 'Your Ticket has been received',
-                           'Your message has been received']
+                           'You will receive a response within 48 hours', 'We are working diligently to respond within 48 hours', 'My inbox is protected by',
+                           'This is an automatically generated message', 'This is an auto-generated email', 'This mailbox is no longer in use',
+                           'I will no longer be checking this email', 'Your Ticket has been received', 'Thank you for submitting your request', 'this email address is not monitored',
+                           'Your message has been received', 'Your email has been received', 'We have received your email', 'We have received your inquiry',
+                           'Please do not respond to this message', 'Our offices are currently closed', 'Dear Applicant', 'We\'ll review your submission', 'We will contact you within',
+                           'Thank you for contacting us']
             if body and any(item.lower() in body.lower() for item in body_filter):
                 _logger.info(
                     'Routing mail with Message-Id %s: not routing auto-reply email from %s to %s with a subject %s',
