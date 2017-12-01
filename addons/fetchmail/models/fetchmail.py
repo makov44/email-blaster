@@ -301,6 +301,7 @@ class FetchmailServer(models.Model):
             for mail_log in mail_logs:
                 try:
                     MailThread.with_context(**additionnal_context).maillog_process(mail_log)
+                    self.env.cr.commit()
                 except Exception:
                     _logger.warn('Failed to process email log from %s server %s. Message ID %s',
                                  server.type, server.name, mail_log['message_id'], exc_info=True)
