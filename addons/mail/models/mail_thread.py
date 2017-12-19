@@ -1109,13 +1109,14 @@ class MailThread(models.AbstractModel):
                               'AUTO RESPONSE', 'Auto Insurance Inquiry', 'SUSPECTED BULK/SPAM', 'Spam', 'mail.message()'
                               'Your email has been received', 'out of the office', 'Automatic Response', 'E-mail Inactive', 'Email forwarded to',
                               'We have received your request', 'Closed email account', 'Email Receipt Confirmation', 'Your email has been received',
-                              'Acknowledgement of Receipt', 'Ticket Received', 'Support Ticket Opened', 'Your Ticket has been created', 'A ticket has been opened for you',
+                              'Acknowledgement of Receipt', 'Ticket Received',  'Support Ticket Opened', 'Your Ticket has been created', 'A ticket has been opened for you',
                               'Ticket #', 'Ticket#', '(verification)', '(sender validation)', 'INACTIVE ACCOUNT' , 'email inactive', 'Your Message is Important to Me',
                               'Email address has changed', 'Change of email Address', 'Invalid Email Address', 'Inactive Email Account', 'email requires verification',
                               'This email address is no longer active', "email inactive",  'new email address', 'no longer using this email address',
                               'This email box is not monitored', 'E-mail Receipt Confirmation', 'Email Address No Longer Used' , 'his email address is not monitored',
                               'Your Email Request Has Been Received', 'Your message has been received', 'UNDELIVERABLE EMAIL', 'Thank you for submitting your resume',
-                              'Thank you for your recent inquiry', 'Thank you for your Inquiry', 'YOUR EMAIL HAS NOT BEEN RECEIVED']
+                              'Thank you for your recent inquiry', 'Thank you for your Inquiry', 'YOUR EMAIL HAS NOT BEEN RECEIVED', 'Thank you for contacting',
+                              'You asked us a question', 'auto-response']
             if any(item.lower() in subject.lower() for item in subject_filter):
                 _logger.info('Routing mail with Message-Id %s: not routing auto-reply email from %s to %s with a subject %s',
                              message_id, email_from, email_to, subject)
@@ -1132,7 +1133,11 @@ class MailThread(models.AbstractModel):
                            'Your message has been received', 'Your email has been received', 'Your message was recieved on', 'We have received your email', 'We have received your inquiry',
                            'Please do not respond to this message', 'Our offices are currently closed', 'Dear Applicant', 'We\'ll review your submission', 'We will contact you within',
                            'Thank you for contacting us', 'Thank you for contacting the Help Desk', 'This e-mail is an acknowledgement', 'AUTOMATIC CONFIRMATION',
-                           'This email confirms that your email with subject']
+                           'This email confirms that your email with subject', 'This email is confirmation', 'We\'ll respond to your request within', 'will respond to your email shortly',
+                           'We have changed our email address', 'We received your request', 'Your email has been received', 'Thank you for your recent email', 'AUTOMATED RESPONSE',
+                           'My email has changed', 'This is an acknowledgement of your request', 'We have received your email and directed it to', 'We have received your request',
+                           'One of our representatives will respond', 'Thank you for contacting our support team', 'Please see attached and confirm', 'We will respond to your inquiry',
+                           'If this is an insurance emergency', 'If your email is concerning an urgent matter', 'One of our representatives may contact you', 'We are now processing your request']
             if body and any(item.lower() in body.lower() for item in body_filter):
                 _logger.info(
                     'Routing mail with Message-Id %s: not routing auto-reply email from %s to %s with a subject %s',
