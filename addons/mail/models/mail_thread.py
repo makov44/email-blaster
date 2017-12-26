@@ -1115,32 +1115,33 @@ class MailThread(models.AbstractModel):
                               'This email address is no longer active', "email inactive",  'new email address', 'no longer using this email address',
                               'This email box is not monitored', 'E-mail Receipt Confirmation', 'Email Address No Longer Used' , 'his email address is not monitored',
                               'Your Email Request Has Been Received', 'Your message has been received', 'UNDELIVERABLE EMAIL', 'Thank you for submitting your resume',
-                              'Thank you for your recent inquiry', 'Thank you for your Inquiry', 'YOUR EMAIL HAS NOT BEEN RECEIVED', 'Thank you for contacting',
-                              'You asked us a question', 'auto-response', 'Thank you for your service request', 'Account inquiries', 'Thank your for submitting']
+                              'Thank you for your recent inquiry', 'Thank you for your Inquiry', 'YOUR EMAIL HAS NOT BEEN RECEIVED', 'Thank you for contacting', 'Unavailable'
+                              'You asked us a question', 'auto-response', 'Thank you for your service request', 'Account inquiries', 'Thank your for submitting', 'Holiday Office Hours']
             if any(item.lower() in subject.lower() for item in subject_filter):
                 _logger.info('Routing mail with Message-Id %s: not routing auto-reply email from %s to %s with a subject %s',
                              message_id, email_from, email_to, subject)
                 return []
 
             body = message_dict['body'] and message_dict['body'].encode("utf-8", "ignore")
-            body = body[0:300]
-            body_filter = ['I am out of the office', 'I\'ll be out of the office', 'I will out of the office', 'I am currently out of the office',
-                           'This email address is no longer valid', 'email address has changed', 'This email address is only for ',
+            body = body[:300]
+            body_filter = ['I am out of the office', 'I\'ll be out of the office', 'I will be out of the office', 'I will out of the office', 'I am currently out of the office', 'our office will be closed',
+                           'Our office is closed', 'This email address is no longer valid', 'email address has changed', 'This email address is only for', 'We have closed for the weekend',
                            'This email is no longer active', 'This account is no longer active', 'I will be out of the office', 'This is an auto reply', 'I will be out of office',
                            'This is an automated response', 'We’ve received your message, and look forward to responding as quickly as possible', 'I am on vacation',
                            'You will receive a response within 48 hours', 'We are working diligently to respond within 48 hours', 'My inbox is protected by',
                            'This is an automatically generated message', 'This is an auto-generated email', 'This is an automated email', 'This mailbox is no longer in use',
-                           'I will no longer be checking this email', 'Your Ticket has been received', 'Thank you for submitting your request', 'this email address is not monitored',
+                           'I will no longer be checking this email', 'Your Ticket has been received', 'Ticket Created', 'created a ticket', 'Thank you for submitting your request', 'this email address is not monitored',
                            'Your message has been received', 'Your email has been received', 'Your message was recieved', 'Your message has been received',
-                           'We have received your email', 'We have received your inquiry',
+                           'We have received your email', 'We have received your inquiry', 'This inbox is no longer monitored', 'Our goal is to respond within',
                            'Please do not respond to this message', 'Our offices are currently closed', 'Dear Applicant', 'We\'ll review your submission', 'We will contact you within',
                            'Thank you for contacting us', 'Thank you for contacting the Help Desk', 'This e-mail is an acknowledgement', 'AUTOMATIC CONFIRMATION',
                            'This email confirms that your email with subject', 'This email is confirmation', 'We\'ll respond to your request within', 'will respond to your email shortly',
                            'We have changed our email address', 'We received your request', 'Your email has been received', 'Thank you for your recent email', 'AUTOMATED RESPONSE',
                            'My email has changed', 'This is an acknowledgement of your request', 'We have received your email and directed it to', 'We have received your request',
                            'One of our representatives will respond', 'Thank you for contacting our support team', 'Please see attached and confirm', 'We will respond to your inquiry',
-                           'If this is an insurance emergency', 'If your email is concerning an urgent matter', 'One of our representatives may contact you',
-                           'We are now processing your request', 'We have received your email', 'Email messages will be filtered', 'Please do not utilize this email']
+                           'If this is an insurance emergency', 'If your email is concerning an urgent matter', 'One of our representatives may contact you', 'I have received your email',
+                           'We are now processing your request', 'We have received your email', 'Email messages will be filtered', 'Please do not utilize this email', 'spam closing',
+                           ' We will review your online request', 'I will respond shortly', 'Your email is very important to us', 'We will reply within']
             if body and any(item.lower() in body.lower() for item in body_filter):
                 _logger.info(
                     'Routing mail with Message-Id %s: not routing auto-reply email from %s to %s with a subject %s',
