@@ -10,8 +10,17 @@ SELECT *   FROM public.mail_mass_mailing_contact
 WHERE id IN (SELECT id
               FROM (SELECT id,
                              ROW_NUMBER() OVER (partition BY email ORDER BY id ) AS rnum
-                     FROM public.mail_mass_mailing_contact) t
-              WHERE t.rnum > 1) and opt_out=FALSE;
+                     FROM public.mail_mass_mailing_contact WHERE opt_out=FALSE) t
+              WHERE t.rnum > 1);
+
+﻿
+UPDATE  public.mail_mass_mailing_contact
+SET opt_out=TRUE , unsubscription_date = '2017-10-31'
+WHERE id IN (SELECT id
+              FROM (SELECT id,
+                             ROW_NUMBER() OVER (partition BY email ORDER BY id ) AS rnum
+                     FROM public.mail_mass_mailing_contact WHERE opt_out=FALSE) t
+              WHERE t.rnum > 1);
 
 
 SELECT id, email, domain, type, confidence, sources, first_name, last_name, "position", linkedin, twitter, phone_number, webmail, pattern, organization, e.category_id, ct.description

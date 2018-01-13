@@ -4,6 +4,9 @@ import logging
 from datetime import datetime
 import random
 
+import psycopg2
+
+import odoo
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 from odoo.tools.safe_eval import safe_eval
@@ -12,8 +15,6 @@ import threading
 import thread
 
 _logger = logging.getLogger(__name__)
-
-MASS_MAILING_LOCK = []
 
 
 class MassMailingTag(models.Model):
@@ -352,8 +353,6 @@ class MassMailing(models.Model):
     template = fields.Many2one('mail.template', string='Template')
     mail_server_id = fields.Many2one('ir.mail_server', 'Outgoing mail server')
 
-    _lock = threading.Lock()
-
     def _compute_total(self):
         for mass_mailing in self:
             mass_mailing.total = len(mass_mailing.sudo().get_recipients())
@@ -452,6 +451,13 @@ class MassMailing(models.Model):
         """ _rec_name is source_id, creates a utm.source instead """
         mass_mailing = self.create({'name': name})
         return mass_mailing.name_get()[0]
+
+    @api.model
+    def create(self, values):
+        res = super(MassMailing, self).create(values)
+        """create lock record for new mass mailing"""
+        self.env['mail.mass_mailing_lock'].create({'mass_mailing_id': res.id})
+        return res
 
     @api.multi
     def copy(self, default=None):
@@ -633,40 +639,61 @@ class MassMailing(models.Model):
 
     @api.model
     def _process_mass_mailing_queue(self):
-        global MASS_MAILING_LOCK
-        remaining_recipients=[]
-        mass_mailings = self.search([('state', 'in', ('in_queue', 'sending')), '|', ('schedule_date', '<', fields.Datetime.now()), ('schedule_date', '=', False)])
+        self._acquire_mass_mailing_lock()
+
+
+    def _acquire_mass_mailing_lock(self):
+        db_name = threading.current_thread().dbname
+        db = odoo.sql_db.db_connect(db_name)
+        mass_mailings = self.search(
+            [('state', 'in', ('in_queue', 'sending')), '|', ('schedule_date', '<', fields.Datetime.now()),
+             ('schedule_date', '=', False)])
         for mass_mailing in mass_mailings:
-            with self._lock:
+            lock_cr = db.cursor()
+            try:
+                # Try to grab an exclusive lock on the mass mailing row from within the task transaction
+                # Restrict to the same conditions as for the search since the job may have already
+                # been run by an other thread when cron is running in multi thread
+                lock_cr.execute("""SELECT *
+                                          FROM mail_mass_mailing_lock
+                                          WHERE mass_mailing_id=%s
+                                          FOR UPDATE NOWAIT""",
+                                (mass_mailing['id'],), log_exceptions=False)
+
+                locked_mass_mailing = lock_cr.fetchone()
+                if not locked_mass_mailing:
+                    _logger.debug("Mass mailing `%s` already executed by another process/thread. skipping it", mass_mailing['id'])
+                    continue
+                # Got the lock on the job row, run its code
+                _logger.debug('Starting mass mailing `%s` thread id `%s`.',  mass_mailing['id'], thread.get_ident())
                 try:
-                    if mass_mailing.id in MASS_MAILING_LOCK:
-                        continue
-                    else:
-                        MASS_MAILING_LOCK.append(mass_mailing.id)
-                        _logger.debug('Locked Mass Mailing `%s` thread id `%s`.', mass_mailing.id, thread.get_ident())
-                        _logger.debug('MASS_MAILING_LOCK = %s ', ', '.join((str(i) for i in MASS_MAILING_LOCK)))
                     remaining_recipients = mass_mailing.get_remaining_recipients()
                     if len(remaining_recipients) > 0:
                         mass_mailing.state = 'sending'
-                    else:
-                        mass_mailing.state = 'done'
+                        mass_mailing.send_mail()
+                        _logger.debug('Finished mass mailing `%s` thread id `%s`.', mass_mailing['id'],
+                                      thread.get_ident())
                 except Exception as e:
-                    _logger.error(e)
-                    if mass_mailing.id in MASS_MAILING_LOCK:
-                        MASS_MAILING_LOCK.remove(mass_mailing.id)
-                        _logger.error('Unlocked Mass Mailing `%s` due the exception.', mass_mailing.id)
+                    _logger.exception('Unexpected exception while processing mass mailing %s. Error: %s', mass_mailing['id'], e.message)
+                finally:
+                    mass_mailing.state = 'done'
+                    break
 
-            try:
-                if len(remaining_recipients) > 0:
-                    mass_mailing.send_mail()
-                    return
+            except psycopg2.OperationalError, e:
+                if e.pgcode == '55P03':
+                    # Class 55: Object not in prerequisite state; 55P03: lock_not_available
+                    _logger.debug('Another process/thread is already busy executing mass mailing `%s`, skipping it.',
+                                  mass_mailing['id'])
+                    continue
+                else:
+                    # Unexpected OperationalError
+                    raise
             finally:
-                with self._lock:
-                    try:
-                        mass_mailing.state = 'done'
-                    except Exception as e:
-                        _logger.error(e)
-                    if mass_mailing.id in MASS_MAILING_LOCK:
-                        MASS_MAILING_LOCK.remove(mass_mailing.id)
-                        _logger.debug('Unlocked Mass Mailing `%s` thread id `%s`.', mass_mailing.id, thread.get_ident())
-                        _logger.debug('MASS_MAILING_LOCK = %s ', ', '.join((str(i) for i in MASS_MAILING_LOCK)))
+                lock_cr.close()
+
+
+class MassMailingLock(models.Model):
+
+    _name = 'mail.mass_mailing_lock'
+    _description = 'Mass Mailing Lock'
+    mass_mailing_id = fields.Integer()
