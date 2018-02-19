@@ -78,3 +78,15 @@ where user_agent_string is not Null and l.mass_mailing_id in (205, 206) and EXTR
 group by user_agent_adj
 order by count(*) desc
 
+
+# Interesting domains grouped by mass mailing list
+select ls.name , _temp.count
+from
+(SELECT ct.list_id, count(ct.email)
+FROM public.mail_mail_statistics st
+inner join mail_mass_mailing_contact as ct on st.res_id = ct.id
+where  st.opened_by is not Null
+group by ct.list_id) as _temp
+inner join mail_mass_mailing_list as ls on ls.id = _temp.list_id
+order by _temp.count
+
