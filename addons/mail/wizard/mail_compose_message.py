@@ -257,12 +257,12 @@ class MailComposer(models.TransientModel):
 
             count = 0
             for res_ids in sliced_res_ids:
+                batch_mails = Mail
                 if wizard.composition_mode == 'mass_mail':
                     delay = self._scheduled_delay(batch_mails.id)
                     _logger.debug("Scheduled delay: %s seconds, for Mail ID %s.", delay.seconds, batch_mails.id)
                     time.sleep(delay.seconds)
 
-                batch_mails = Mail
                 all_mail_values = wizard.get_mail_values(res_ids)
                 for res_id, mail_values in all_mail_values.iteritems():
                     if wizard.composition_mode == 'mass_mail':
