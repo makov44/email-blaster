@@ -8,6 +8,8 @@ from odoo import _, api, fields, models, SUPERUSER_ID, tools
 from odoo.tools.safe_eval import safe_eval
 import time
 import logging
+from datetime import datetime, timedelta
+import pytz
 
 _logger = logging.getLogger(__name__)
 
@@ -44,8 +46,10 @@ class MailComposer(models.TransientModel):
     _inherit = 'mail.message'
     _description = 'Email composition wizard'
     _log_access = True
-    _batch_size = 500
-    _batch_delay = 0
+    _batch_size = 1
+    _batch_delay = 1
+    _start_sending_emails_at = 0
+    _stop_sending_emails_at = 24
 
     @api.model
     def default_get(self, fields):
@@ -253,6 +257,10 @@ class MailComposer(models.TransientModel):
 
             count = 0
             for res_ids in sliced_res_ids:
+                if wizard.composition_mode == 'mass_mail':
+                    delay = self._scheduled_delay()
+                    time.sleep(delay.seconds)
+
                 batch_mails = Mail
                 all_mail_values = wizard.get_mail_values(res_ids)
                 for res_id, mail_values in all_mail_values.iteritems():
@@ -271,6 +279,53 @@ class MailComposer(models.TransientModel):
                     time.sleep(batch_delay)
 
         return {'type': 'ir.actions.act_window_close'}
+
+    def _scheduled_delay(self):
+        if self.env['ir.config_parameter'].sudo().get_param('mail.send_on_weekend') == 'True':
+            can_send_on_weekend = True
+        else:
+            can_send_on_weekend = False
+
+        start_sending_emails_at = int(self.env['ir.config_parameter'].sudo().get_param(
+            'mail.start_sending_emails_at')) or self._start_sending_emails_at
+        stop_sending_emails_at = int(self.env['ir.config_parameter'].sudo().get_param(
+            'mail.stop_sending_emails_at')) or self._stop_sending_emails_at
+        if start_sending_emails_at == 0 and start_sending_emails_at == 24:
+            return 0
+
+        if start_sending_emails_at < 0 or start_sending_emails_at > 23:
+            start_sending_emails_at = 0
+
+        if stop_sending_emails_at <= start_sending_emails_at or stop_sending_emails_at > 24:
+            stop_sending_emails_at = 24
+
+        tz_name = self.env.context.get('tz') or self.env.user.tz
+        if tz_name:
+            try:
+                user_tz = pytz.timezone(tz_name)
+            except Exception as e:
+                _logger.exception(e)
+                user_tz = pytz.timezone('UTC')
+
+        _now = datetime.now(tz=user_tz)
+        weekday_now = _now.isoweekday()
+        hour_now = _now.hour
+        if can_send_on_weekend is False and weekday_now > 5:
+            delay = timedelta(days=(8 - weekday_now))
+            hours_calc = (_now + delay).hour
+            if hours_calc > start_sending_emails_at:
+                delay = delay - timedelta(hours=(hours_calc - start_sending_emails_at))
+            else:
+                delay = delay + timedelta(hours=(start_sending_emails_at - hours_calc))
+        elif hour_now < start_sending_emails_at:
+            delay = timedelta(hours=(start_sending_emails_at - hour_now))
+        elif hour_now > stop_sending_emails_at:
+            delay = timedelta(hours=(24 + start_sending_emails_at - hour_now))
+        else:
+            delay = 0
+
+        return delay
+
 
     @api.multi
     def get_mail_values(self, res_ids):
