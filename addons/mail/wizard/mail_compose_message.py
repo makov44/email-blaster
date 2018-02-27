@@ -291,7 +291,7 @@ class MailComposer(models.TransientModel):
         stop_sending_emails_at = int(self.env['ir.config_parameter'].sudo().get_param(
             'mail.stop_sending_emails_at')) or self._stop_sending_emails_at
         if start_sending_emails_at == 0 and start_sending_emails_at == 24:
-            return 0
+            return timedelta(seconds=0)
 
         if start_sending_emails_at < 0 or start_sending_emails_at > 23:
             start_sending_emails_at = 0
@@ -322,7 +322,7 @@ class MailComposer(models.TransientModel):
         elif hour_now > stop_sending_emails_at:
             delay = timedelta(hours=(24 + start_sending_emails_at - hour_now))
         else:
-            delay = 0
+            delay = timedelta(seconds=0)
 
         return delay
 
