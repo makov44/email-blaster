@@ -48,14 +48,9 @@ class MailComposer(models.TransientModel):
     _log_access = True
     _batch_size = 1
     _batch_delay = 1
-
-    def __init__(self, pool, cr):
-        self._start_sending_emails_at = int(
-            self.env['ir.config_parameter'].sudo().get_param('mail.start_sending_emails_at')) or 0
-        self._stop_sending_emails_at = int(
-            self.env['ir.config_parameter'].sudo().get_param('mail.stop_sending_emails_at')) or 24
-        self._send_on_weekend = self.env['ir.config_parameter'].sudo().get_param('mail.send_on_weekend')
-        return super(MailComposer, self).__init__(pool, cr)
+    _start_sending_emails_at = 0
+    _stop_sending_emails_at = 24
+    _send_on_weekend = False
 
     @api.model
     def default_get(self, fields):
@@ -289,13 +284,14 @@ class MailComposer(models.TransientModel):
 
     def _scheduled_delay(self):
         try:
+            self._send_on_weekend = self.env['ir.config_parameter'].sudo().get_param('mail.send_on_weekend')
             if self._send_on_weekend == 'True':
                 can_send_on_weekend = True
             else:
                 can_send_on_weekend = False
 
-            start_sending_emails_at = self._start_sending_emails_at
-            stop_sending_emails_at = self._stop_sending_emails_at
+            start_sending_emails_at = int(self.env['ir.config_parameter'].sudo().get_param('mail.start_sending_emails_at')) or 0
+            stop_sending_emails_at = int(self.env['ir.config_parameter'].sudo().get_param('mail.stop_sending_emails_at')) or 24
 
             if start_sending_emails_at == 0 and start_sending_emails_at == 24:
                 return timedelta(seconds=0)
@@ -306,6 +302,8 @@ class MailComposer(models.TransientModel):
             if stop_sending_emails_at <= start_sending_emails_at or stop_sending_emails_at > 24:
                 stop_sending_emails_at = 24
 
+            _logger.debug("start_sending_emails_at=%s", start_sending_emails_at)
+            _logger.debug("stop_sending_emails_at=%s", stop_sending_emails_at)
             tz_name = self.env.context.get('tz') or self.env.user.tz
             if tz_name:
                 try:
