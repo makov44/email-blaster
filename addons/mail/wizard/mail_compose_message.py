@@ -317,6 +317,7 @@ class MailComposer(models.TransientModel):
             _now = datetime.now(tz=user_tz)
             weekday_now = _now.isoweekday()
             hour_now = _now.hour
+            _logger.debug("hour_now=%s", hour_now)
             if can_send_on_weekend is False and weekday_now > 5:
                 delay = timedelta(days=(8 - weekday_now))
                 hours_calc = (_now + delay).hour
