@@ -277,7 +277,7 @@ class FetchmailServer(models.Model):
                 cursor = cnx.cursor()
                 query = ("select email_to, email_from, message_id, last_status "                        
                          "from email_log "
-                         "where ts >= DATE_SUB(NOW(),INTERVAL 1 HOUR) "
+                         "where ts >= DATE_SUB(NOW(),INTERVAL 10 HOUR) "
                          "order by ts DESC")
 
                 cursor.execute(query)
