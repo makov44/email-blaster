@@ -327,7 +327,7 @@ class MailComposer(models.TransientModel):
                     delay = delay + timedelta(hours=(start_sending_emails_at - hours_calc))
             elif hour_now < start_sending_emails_at:
                 delay = timedelta(hours=(start_sending_emails_at - hour_now))
-            elif hour_now > stop_sending_emails_at:
+            elif hour_now >= stop_sending_emails_at:
                 delay = timedelta(hours=(24 + start_sending_emails_at - hour_now))
             else:
                 delay = timedelta(seconds=0)
