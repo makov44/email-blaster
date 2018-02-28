@@ -48,8 +48,14 @@ class MailComposer(models.TransientModel):
     _log_access = True
     _batch_size = 1
     _batch_delay = 1
-    _start_sending_emails_at = 0
-    _stop_sending_emails_at = 24
+
+    def __init__(self):
+        super(MailComposer, self).__init__()
+        self._start_sending_emails_at = int(
+            self.env['ir.config_parameter'].sudo().get_param('mail.start_sending_emails_at')) or 0
+        self._stop_sending_emails_at = int(
+            self.env['ir.config_parameter'].sudo().get_param('mail.stop_sending_emails_at')) or 24
+        self._send_on_weekend = self.env['ir.config_parameter'].sudo().get_param('mail.send_on_weekend')
 
     @api.model
     def default_get(self, fields):
@@ -257,12 +263,12 @@ class MailComposer(models.TransientModel):
 
             count = 0
             for res_ids in sliced_res_ids:
-                batch_mails = Mail
                 if wizard.composition_mode == 'mass_mail':
-                    delay = self._scheduled_delay(batch_mails.id)
-                    _logger.debug("Scheduled delay: %s seconds, for Mail ID %s.", delay.seconds, batch_mails.id)
+                    delay = self._scheduled_delay()
+                    _logger.debug("Scheduled delay: %s seconds.", delay.seconds)
                     time.sleep(delay.seconds)
 
+                batch_mails = Mail
                 all_mail_values = wizard.get_mail_values(res_ids)
                 for res_id, mail_values in all_mail_values.iteritems():
                     if wizard.composition_mode == 'mass_mail':
@@ -281,17 +287,16 @@ class MailComposer(models.TransientModel):
 
         return {'type': 'ir.actions.act_window_close'}
 
-    def _scheduled_delay(self, mail_id):
+    def _scheduled_delay(self):
         try:
-            if self.env['ir.config_parameter'].sudo().get_param('mail.send_on_weekend') == 'True':
+            if self._send_on_weekend == 'True':
                 can_send_on_weekend = True
             else:
                 can_send_on_weekend = False
 
-            start_sending_emails_at = int(self.env['ir.config_parameter'].sudo().get_param(
-                'mail.start_sending_emails_at')) or self._start_sending_emails_at
-            stop_sending_emails_at = int(self.env['ir.config_parameter'].sudo().get_param(
-                'mail.stop_sending_emails_at')) or self._stop_sending_emails_at
+            start_sending_emails_at = self._start_sending_emails_at
+            stop_sending_emails_at = self._stop_sending_emails_at
+
             if start_sending_emails_at == 0 and start_sending_emails_at == 24:
                 return timedelta(seconds=0)
 
@@ -305,11 +310,11 @@ class MailComposer(models.TransientModel):
             if tz_name:
                 try:
                     user_tz = pytz.timezone(tz_name)
-                    _logger.debug("user time zone %s for Mail ID %s.", str(tz_name), mail_id)
+                    _logger.debug("User time zone %s.", str(tz_name))
                 except Exception as e:
                     _logger.exception(e)
-                    _logger.debug("user time zone UTC for Mail ID %s.", mail_id)
-                    user_tz = pytz.timezone('UTC')
+                    _logger.debug("User time zone is US/Pacific(default).")
+                    user_tz = pytz.timezone('US/Pacific')
 
             _now = datetime.now(tz=user_tz)
             weekday_now = _now.isoweekday()
