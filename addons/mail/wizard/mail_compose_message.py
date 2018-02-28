@@ -49,13 +49,13 @@ class MailComposer(models.TransientModel):
     _batch_size = 1
     _batch_delay = 1
 
-    def __init__(self):
-        super(MailComposer, self).__init__()
+    def __init__(self, pool, cr):
         self._start_sending_emails_at = int(
             self.env['ir.config_parameter'].sudo().get_param('mail.start_sending_emails_at')) or 0
         self._stop_sending_emails_at = int(
             self.env['ir.config_parameter'].sudo().get_param('mail.stop_sending_emails_at')) or 24
         self._send_on_weekend = self.env['ir.config_parameter'].sudo().get_param('mail.send_on_weekend')
+        return super(MailComposer, self).__init__(pool, cr)
 
     @api.model
     def default_get(self, fields):
