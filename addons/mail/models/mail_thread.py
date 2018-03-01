@@ -1118,7 +1118,7 @@ class MailThread(models.AbstractModel):
                               'Thank you for your recent inquiry', 'Thank you for your Inquiry', 'YOUR EMAIL HAS NOT BEEN RECEIVED', 'Thank you for contacting', 'Unavailable'
                               'You asked us a question', 'auto-response', 'Thank you for your service request', 'Account inquiries', 'Thank your for submitting', 'Holiday Office Hours']
             if any(item.lower() in subject.lower() for item in subject_filter):
-                _logger.info('Routing mail with Message-Id %s: not routing auto-reply email from %s to %s with a subject %s',
+                _logger.info('Message-Id %s: not routing auto-reply email from %s to %s with a subject %s',
                              message_id, email_from, email_to, subject)
                 return []
 
@@ -1144,7 +1144,7 @@ class MailThread(models.AbstractModel):
                            ' We will review your online request', 'I will respond shortly', 'Your email is very important to us', 'We will reply within']
             if body and any(item.lower() in body.lower() for item in body_filter):
                 _logger.info(
-                    'Routing mail with Message-Id %s: not routing auto-reply email from %s to %s with a subject %s',
+                    'Message-Id %s: not routing auto-reply email from %s to %s with a subject %s',
                     message_id, email_from, email_to, subject)
                 return []
         except Exception as e:
