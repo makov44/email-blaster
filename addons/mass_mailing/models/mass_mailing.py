@@ -676,6 +676,7 @@ class MassMailing(models.Model):
                 except Exception as e:
                     _logger.exception('Unexpected exception while processing mass mailing %s. Error: %s', mass_mailing['id'], e.message)
                 finally:
+                    remaining_recipients = mass_mailing.get_remaining_recipients()
                     if len(remaining_recipients) == 0:
                         mass_mailing.state = 'done'
                     break
