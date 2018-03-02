@@ -261,7 +261,12 @@ class MailComposer(models.TransientModel):
                 if wizard.composition_mode == 'mass_mail':
                     delay = self._scheduled_delay()
                     _logger.debug("Scheduled delay: %s seconds.", delay.seconds)
-                    time.sleep(delay.seconds)
+                    if delay.seconds > 0:
+                        mass_mailings = self.env["mail.mass_mailing"].sudo().search([('id', '=', wizard.mass_mailing_id.id)])
+                        for mass_mailing in mass_mailings:
+                            mass_mailing.schedule_date = (datetime.now() + delay).strftime(fields.DATETIME_FORMAT)
+                            _logger.debug("Schedule new datetime %s for mass mailing id %s.", str(mass_mailing.schedule_date), mass_mailing.id)
+                        return {'type': 'ir.actions.act_window_close'}
 
                 batch_mails = Mail
                 all_mail_values = wizard.get_mail_values(res_ids)
@@ -304,16 +309,7 @@ class MailComposer(models.TransientModel):
 
             _logger.debug("start_sending_emails_at=%s", start_sending_emails_at)
             _logger.debug("stop_sending_emails_at=%s", stop_sending_emails_at)
-            tz_name = self.env.context.get('tz') or self.env.user.tz
-            if tz_name:
-                try:
-                    user_tz = pytz.timezone(tz_name)
-                    _logger.debug("User time zone %s.", str(tz_name))
-                except Exception as e:
-                    _logger.exception(e)
-                    _logger.debug("User time zone is US/Pacific(default).")
-                    user_tz = pytz.timezone('US/Pacific')
-
+            user_tz = self._get_user_tz()
             _now = datetime.now(tz=user_tz)
             weekday_now = _now.isoweekday()
             hour_now = _now.hour
@@ -337,6 +333,18 @@ class MailComposer(models.TransientModel):
             _logger.exception(e)
             return timedelta(seconds=0)
 
+    def _get_user_tz(self):
+        tz_name = self.env.context.get('tz') or self.env.user.tz
+        if tz_name:
+            try:
+                user_tz = pytz.timezone(tz_name)
+                _logger.debug("User time zone %s.", str(tz_name))
+            except Exception as e:
+                _logger.exception(e)
+                _logger.debug("User time zone is US/Pacific(default).")
+                user_tz = pytz.timezone('US/Pacific')
+
+        return user_tz
 
     @api.multi
     def get_mail_values(self, res_ids):

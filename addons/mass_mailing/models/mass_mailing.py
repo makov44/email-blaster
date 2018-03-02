@@ -613,7 +613,6 @@ class MassMailing(models.Model):
 
             composer = self.env['mail.compose.message'].with_context(active_ids=res_ids).create(composer_values)
             composer.with_context(active_ids=res_ids).send_mail(auto_commit=True)
-            #mailing.state = 'done'
         return True
 
     def convert_links(self):
@@ -669,6 +668,7 @@ class MassMailing(models.Model):
                 try:
                     remaining_recipients = mass_mailing.get_remaining_recipients()
                     if len(remaining_recipients) > 0:
+                        _logger.debug('Mass Mailing remaining recipients number: %s', str(remaining_recipients))
                         mass_mailing.state = 'sending'
                         mass_mailing.send_mail()
                         _logger.debug('Finished mass mailing `%s` thread id `%s`.', mass_mailing['id'],
@@ -676,7 +676,6 @@ class MassMailing(models.Model):
                 except Exception as e:
                     _logger.exception('Unexpected exception while processing mass mailing %s. Error: %s', mass_mailing['id'], e.message)
                 finally:
-                    remaining_recipients = mass_mailing.get_remaining_recipients()
                     if len(remaining_recipients) == 0:
                         mass_mailing.state = 'done'
                     break
