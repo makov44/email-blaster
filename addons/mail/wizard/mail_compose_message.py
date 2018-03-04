@@ -261,7 +261,7 @@ class MailComposer(models.TransientModel):
                 if wizard.composition_mode == 'mass_mail':
                     delay = self._scheduled_delay()
                     _logger.debug("Scheduled delay: %s seconds.", delay.seconds)
-                    if delay.seconds > 0:
+                    if delay.total_seconds() > 0:
                         mass_mailings = self.env["mail.mass_mailing"].sudo().search([('id', '=', wizard.mass_mailing_id.id)])
                         for mass_mailing in mass_mailings:
                             mass_mailing.schedule_date = (datetime.now() + delay).strftime(fields.DATETIME_FORMAT)
