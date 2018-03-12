@@ -672,7 +672,7 @@ class MassMailing(models.Model):
                 try:
                     remaining_recipients = mass_mailing.get_remaining_recipients()
                     if len(remaining_recipients) > 0:
-                        _logger.debug('Mass Mailing remaining recipients number: %s', str(remaining_recipients))
+                        _logger.debug('Mass Mailing ID %s, remaining recipients number: %s', mass_mailing['id'], str(remaining_recipients))
                         mass_mailing.state = 'sending'
                         mass_mailing.send_mail()
                         _logger.debug('Finished mass mailing `%s` thread id `%s`.', mass_mailing['id'],
