@@ -565,10 +565,14 @@ class MassMailing(models.Model):
         if self.contact_ab_pc < 100:
             contact_nbr = self.env[self.mailing_model].search_count(domain)
             topick = int(contact_nbr / 100.0 * self.contact_ab_pc)
-            if self.mass_mailing_campaign_id and self.mass_mailing_campaign_id.unique_ab_testing:
+            if self.mass_mailing_campaign_id:
                 already_mailed = self.mass_mailing_campaign_id.get_recipients()[self.mass_mailing_campaign_id.id]
             else:
                 already_mailed = set([])
+
+            if already_mailed > 0 and topick <= len(already_mailed):
+                return set(already_mailed)
+
             remaining = set(res_ids).difference(already_mailed)
             if topick > len(remaining):
                 topick = len(remaining)
