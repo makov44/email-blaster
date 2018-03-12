@@ -570,7 +570,7 @@ class MassMailing(models.Model):
             else:
                 already_mailed = set([])
 
-            if already_mailed > 0 and topick <= len(already_mailed):
+            if topick <= len(already_mailed):
                 return set(already_mailed)
 
             remaining = set(res_ids).difference(already_mailed)
