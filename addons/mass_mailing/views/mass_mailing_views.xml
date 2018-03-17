@@ -449,7 +449,7 @@
             <field name="name">Mass Mailings</field>
             <field name="res_model">mail.mass_mailing</field>
             <field name="view_type">form</field>
-            <field name="view_mode">kanban,tree,form,graph</field>
+            <field name="view_mode">tree,kanban,form,graph</field>
             <field name="help" type="html">
 <p class="oe_view_nocontent_create">
     Click here to create a new mailing.
