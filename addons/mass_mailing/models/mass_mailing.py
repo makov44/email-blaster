@@ -680,6 +680,8 @@ class MassMailing(models.Model):
                     remaining_recipients = mass_mailing.get_remaining_recipients()
                     if len(remaining_recipients) == 0:
                         mass_mailing.state = 'done'
+                    _logger.debug('Released lock for Mass Mailing ID %s', mass_mailing['id'])
+                    lock_cr.close()
                     break
 
             except psycopg2.OperationalError, e:
@@ -689,12 +691,12 @@ class MassMailing(models.Model):
                                   mass_mailing['id'])
                     continue
                 else:
-                    # Unexpected OperationalError
-                    raise
-            finally:
-                if mass_mailing['id']:
                     _logger.debug('Released lock for Mass Mailing ID %s', mass_mailing['id'])
-                lock_cr.close()
+                    lock_cr.close()
+                    raise
+
+            _logger.debug('Released lock for Mass Mailing ID %s', mass_mailing['id'])
+            lock_cr.close()
 
 
 class MassMailingLock(models.Model):
