@@ -692,6 +692,8 @@ class MassMailing(models.Model):
                     # Unexpected OperationalError
                     raise
             finally:
+                if mass_mailing['id']:
+                    _logger.debug('Released lock for Mass Mailing ID %s', mass_mailing['id'])
                 lock_cr.close()
 
 
