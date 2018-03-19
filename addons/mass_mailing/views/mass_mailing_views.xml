@@ -216,7 +216,9 @@
             <field name="priority">10</field>
             <field name="arch" type="xml">
                 <tree string="Mass Mailings">
+                    <field name="create_date"/>
                     <field name="name"/>
+                    <field name="state"/>
                     <field name="sent"/>
                     <field name="delivered"/>
                     <field name="opened"/>
