@@ -675,7 +675,7 @@ class MassMailing(models.Model):
                         _logger.debug('Finished mass mailing `%s` thread id `%s`.', mass_mailing['id'],
                                       thread.get_ident())
                 except Exception as e:
-                    _logger.exception('Unexpected exception while processing mass mailing %s. Error: %s', mass_mailing['id'], e.message)
+                    _logger.exception('Unexpected exception while processing mass mailing %s. Error: %s', mass_mailing['id'], str(e))
                 finally:
                     remaining_recipients = mass_mailing.get_remaining_recipients()
                     if len(remaining_recipients) == 0:
