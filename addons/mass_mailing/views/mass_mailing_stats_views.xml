@@ -28,7 +28,7 @@
         <field name="name">mail.mail.statistics.tree</field>
         <field name="model">mail.mail.statistics</field>
         <field name="arch" type="xml">
-            <tree string="Mail Statistics">
+            <tree string="Mail Statistics" default_order="sent desc">
                 <field name="recipient"/>
                 <field name="mail_mail_id_int"/>
                 <field name="message_id"/>
