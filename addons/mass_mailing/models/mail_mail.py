@@ -4,11 +4,13 @@
 import re
 import urlparse
 import werkzeug.urls
+import logging
 
 from odoo import api, fields, models, tools
 
 from openerp.addons.link_tracker.models.link_tracker import URL_REGEX
 
+_logger = logging.getLogger(__name__)
 
 class MailMail(models.Model):
     """Add the mass mailing campaign data to mail"""
@@ -65,6 +67,7 @@ class MailMail(models.Model):
                 if not [s for s in links_blacklist if s in href]:
                     new_href = href.replace(url, url + '/m/' + str(self.statistics_ids[0].id))
                     body = body.replace(href, new_href)
+                    _logger.debug("Mass mailing tracking url %s", new_href)
 
         # prepend <base> tag for images using absolute urls
         domain = self.env["ir.config_parameter"].get_param("web.base.url")
