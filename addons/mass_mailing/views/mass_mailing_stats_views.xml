@@ -84,7 +84,7 @@
         <field name="name">Mail Statistics</field>
         <field name="res_model">mail.mail.statistics</field>
         <field name="view_type">form</field>
-        <field name="view_mode">graph,tree,form</field>
+        <field name="view_mode">tree,graph,form</field>
         <field name="domain">[]</field>
         <field name="context">{'search_default_mass_mailing_id': active_id}</field>
     </record>

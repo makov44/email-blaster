@@ -4,8 +4,8 @@
         <record model="ir.actions.act_window" id="action_view_click_statistics">
             <field name="name">Statistics of Clicks</field>
             <field name="res_model">link.tracker.click</field>
-            <field name="view_mode">graph</field>
-            <field name="domain">[('link_id', 'IN', ids)]</field>
+            <field name="view_mode">tree,form,graph</field>
+            <field name="view_id" ref="view_link_tracker_click_tree"/>
         </record>
 
         <!-- Search -->
