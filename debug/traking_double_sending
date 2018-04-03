@@ -90,3 +90,13 @@ group by ct.list_id) as _temp
 inner join mail_mass_mailing_list as ls on ls.id = _temp.list_id
 order by _temp.count
 
+
+
+/* Return list of opened and clicked mass mailing contacts for particular category*/
+select last_name, category, first_name, email, phone_number, company, name, position
+from mail_mass_mailing_contact
+where list_id in (select id from mail_mass_mailing_list where name like '%Commercial%')
+	and id in (SELECT res_id
+	FROM public.mail_mail_statistics
+    where opened is not Null or  id in (select mail_stat_id from public.link_tracker_click))
+
