@@ -278,7 +278,7 @@ class FetchmailServer(models.Model):
                 query = ("select email_to, email_from, message_id, last_status "                        
                          "from email_log "
                          "where ts >= DATE_SUB(NOW(),INTERVAL 1 HOUR) "
-                         "order by ts DESC")
+                         "order by ts ASC")
 
                 cursor.execute(query)
                 for mail_log in cursor:
